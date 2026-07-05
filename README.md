@@ -1,0 +1,360 @@
+# Java AI 应用开发实战课
+
+这个仓库现在只保留课程介绍和目录说明，不再公开课程源码。
+
+课程代码、完整案例和配套文档属于课程资料。为了避免公开仓库被直接下载传播，示例源码已经从 GitHub 公共仓库移除。已经购买课程的朋友，请以课程内飞书资料和交付渠道为准。
+
+## 课程适合谁
+
+这是一套面向 Java 后端工程师的 AI 应用开发实战课。重点不是泛泛讲大模型概念，而是把 AI 能力放回真实 Java 工程里：接口设计、模型配置、Prompt 契约、结构化输出、RAG、Tool Calling、MCP、Skills、Agent、Coding Agent、企业项目实战和生产化治理。
+
+课程默认以 Java 代码完成示例，模型配置以 DeepSeek 为主，同时保留 Ollama 和 ChatGPT / OpenAI Compatible API 的切换方式。
+
+## 能学到什么
+
+- Java 后端如何接入大模型，而不是只停留在聊天 Demo。
+- Prompt 如何按接口契约设计，输出如何稳定回到 Java 对象。
+- RAG 知识库如何做文档切分、召回、重排、引用来源和边界控制。
+- Tool Calling 如何接入订单、库存、CRM、工单等真实业务能力。
+- MCP、Skills、Agentic Workflow 如何落到 Java 工程结构里。
+- 企业级 AI 客服、智能运维排障、Coding Agent、生产化检查台如何设计和实现。
+- 成本、审计、权限、安全、评测、上线前检查这些生产问题如何提前处理。
+
+## 如何购买
+
+打开抖音，搜索：**互联网老实人**
+
+进入账号后查看 Java AI 应用开发实战课相关内容和购买入口。
+
+## 飞书课程目录
+
+当前飞书知识库目录共 324 个文档节点。目录会持续更新，以下只作为公开预览，正式内容以课程内飞书文档为准。
+
+- Java AI 应用开发实战课｜AI应用开发到底学什么？
+  - 00｜如何学习这套教程【含视频】
+  - 00｜AI行业术语与解释
+    - AGI
+    - AIGC
+    - 机器学习
+    - 深度学习
+    - 神经网络
+    - 模型
+    - 参数
+    - 训练
+    - 推理
+    - 样本
+    - 特征
+    - 数据集
+    - 标注
+    - 训练集
+    - 验证集
+    - 测试集
+    - 泛化能力
+    - 过拟合
+    - 监督学习
+    - 无监督学习
+    - 半监督学习
+    - 强化学习
+    - LLM【含视频】
+    - 基座模型【含视频】
+    - 对话模型
+    - 推理模型【含视频】
+    - 多模态模型【含视频】
+    - Token【含视频】
+    - Tokenizer【含视频】
+    - 输入 Token
+    - 输出 Token
+    - 上下文【含视频】
+    - 上下文窗口【含视频】
+    - Prompt
+    - System Prompt
+    - User Prompt
+    - Assistant Message
+    - Completion
+    - Temperature【含视频】
+    - Top-p
+    - Top-k
+    - Max Tokens
+    - 流式输出
+    - 多轮对话
+    - 单轮问答
+    - 幻觉
+    - Zero-shot
+    - Few-shot
+    - Chain of Thought
+    - ReAct
+    - Structured Output
+    - JSON Mode
+    - Function Calling
+    - Tool Calling
+    - Function Schema
+    - Transformer
+    - Attention
+    - Self-Attention
+    - Embedding
+    - 位置编码
+    - Encoder
+    - Decoder
+    - 参数量
+    - MoE
+    - 稀疏激活
+    - 长上下文
+    - 多模态理解
+    - OCR
+    - TTS
+    - Diffusion Model
+    - 预训练
+    - 微调
+    - Fine-tuning
+    - SFT
+    - Instruction Tuning
+    - 后训练
+    - LoRA
+    - Adapter
+    - Epoch
+    - Batch
+    - Batch Size
+    - Loss
+    - Optimizer
+    - 学习率
+    - 梯度
+    - 反向传播
+    - Checkpoint
+    - 蒸馏
+    - RAG
+    - 知识库
+    - 向量数据库
+    - 向量检索
+    - 语义搜索
+    - 混合检索
+    - Chunk
+    - Chunk Size
+    - Chunk Overlap
+    - Top K
+    - Rerank
+    - Metadata
+    - 引用来源
+    - 召回率
+    - 精确率
+    - Query Rewrite
+    - Query Expansion
+    - Multi-query Retrieval
+    - Parent-child Chunk
+    - Knowledge Graph
+    - Graph RAG
+    - Freshness
+    - Agent
+    - Agentic AI
+    - Agentic Workflow
+    - Agentic Engineering
+    - Planner
+    - Executor
+    - Tool Router
+    - Tool Registry
+    - Tool Permission
+    - Least Privilege
+    - Memory
+    - Short-term Memory
+    - Long-term Memory
+    - Episodic Memory
+    - Semantic Memory
+    - Procedural Memory
+    - Reflection
+    - Self-healing Agent
+    - Human-in-the-loop
+    - Autonomous Agent
+    - Browser Agent
+    - CLI Agent
+    - Terminal Agent
+    - Computer Use
+    - Handoff
+    - Multi-Agent Orchestration
+    - Supervisor Agent
+    - Fan-out
+    - Swarm
+    - Debate Pattern
+    - Harness
+    - MCP
+    - MCP Server
+    - MCP Client
+    - A2A
+    - SDK
+    - LangChain
+    - LangGraph
+    - LlamaIndex
+    - Spring AI
+    - Semantic Kernel
+    - Ollama
+    - Hugging Face
+    - OpenAI Compatible API
+    - AI Native
+    - Copilot
+    - Chatbot
+    - AI Search
+    - 智能客服
+    - 智能问答
+    - 文档助手
+    - 代码助手
+    - 私有化部署
+    - 本地模型
+    - 云端模型
+    - GPU
+    - 显存
+    - CPU 推理
+    - 量化
+    - INT8
+    - INT4
+    - FP16
+    - BF16
+    - KV Cache
+    - Batch Inference
+    - 吞吐量
+    - Rate Limit
+    - Token Cost
+    - 冷启动
+    - 灰度发布
+    - A/B 测试
+    - 兜底策略
+  - 01｜Java 程序员如何进入 AI 应用开发
+    - 1.1｜AI 应用和传统 Java 应用的区别【含视频】
+    - 1.2｜第一个 Spring AI 应用【含视频】
+    - 1.3｜第一个 LangChain4j 应用【含视频】
+  - 02｜Prompt、上下文和结构化输出
+    - 2.1｜Prompt 不是玄学，是接口设计【含视频】
+    - 2.2｜Java 后端最需要的是结构化输出
+    - 2.3｜Spring AI 结构化输出实战
+    - 2.4｜LangChain4j 结构化输出实战
+    - 2.5｜经典产品泄露 Prompt 案例拆解
+    - 2.6｜实战项目：智能客服工单助手
+  - 03｜RAG 企业知识库实战
+    - 3.1｜RAG 的本质【含视频】
+    - 3.2｜Spring AI RAG 实战
+    - 3.3｜LangChain4j RAG 实战
+    - 3.4｜LangChain4j RAG 小项目实战
+    - 3.5｜RAG 常见坑 【含视频】
+    - 3.6｜Embedding：让文本可以被计算
+    - 3.7｜Embedding 召回和重排优化：从问题到解决方案
+  - 04｜Tool Calling：让 AI 调用 Java 业务能力
+    - 4.1｜从 Chatbot 到 Agent 的关键一步
+    - 4.2｜Spring AI Tool 实战
+    - 4.3｜LangChain4j Tool 实战
+    - 4.4｜工具设计原则
+  - 05｜AI 应用记忆：会话上下文、长期记忆与工程落地
+    - 5.1｜先分清 History、Memory 和业务状态
+    - 5.2｜Spring AI 会话记忆
+    - 5.3｜Spring AI 持久化与长期记忆
+    - 5.4｜LangChain4j 会话记忆
+    - 5.5｜LangChain4j 持久化记忆和 RAG 边界
+    - 5.6｜记忆系统的工程边界
+  - 06｜MCP 协议实战
+    - 6.1 为什么需要 MCP
+    - 6.2 Spring AI MCP Server
+      - 6.2.1｜把现有 Spring 服务改造成 MCP Server
+    - 6.3 Spring AI MCP Client
+      - 6.3.1｜把现有 Spring 服务改造成 MCP Client
+    - 6.4 LangChain4j MCP 实战
+      - 6.4.2 LangChain4j MCP 客户端实战
+      - 6.4.1 LangChain4j MCP 服务端实战
+    - 6.5 经典 MCP Server 源码解读
+    - 6.6 Java 实现的知名 MCP 项目盘点
+  - 07｜Skills：把经验封装成可复用能力
+    - 7.1｜Skills 是什么
+    - 7.3｜Java Skills 实战：加载、路由和执行
+    - 7.2｜Skills 和 MCP、Tool 的区别
+    - 7.4｜自研 Java Skill Runtime
+    - 7.5｜Spring AI 中使用 Skills
+    - 7.6｜LangChain4j 中使用 Skills
+  - 08｜Agent 架构设计
+    - 8.1｜什么是 Agent
+    - 8.2｜手写一个最小 Agent Loop
+    - 8.3｜Spring Boot Agent Runtime
+      - 8.3.1｜Agent Runtime 的服务分层
+      - 8.3.2｜状态、轨迹和事件推送
+      - 8.3.3｜工具权限、人工确认和失败恢复
+      - 8.3.4｜完整实战：订单售后 Agent Runtime
+    - 8.4｜LangChain4j Agentic 实战
+      - 8.4.1｜@Agent、outputKey 和 AgenticScope
+      - 8.4.2｜Sequential、Parallel 和 Loop Workflow
+      - 8.4.3｜AgenticScope 状态治理
+      - 8.4.4｜完整实战：订单售后 Agentic Workflow
+  - 09｜Claude Code / OpenClaw / Hermes / Coding Agent 架构拆解
+    - 9.1｜Claude Code 的 Coding Agent 运行时
+      - 9.1.1｜Claude Code 架构总览：Agentic Harness
+      - 9.1.2｜Claude Code 启动链路和运行时装配
+      - 9.1.3｜Claude Code 工具、权限、Skills 和 MCP 源码精读
+      - 9.1.4｜Java 实现 Claude Code 式 Harness
+      - 9.1.5｜Claude Code 的记忆机制：CLAUDE.md 与自动记忆
+      - 9.1.6｜Claude Code 时区检测事件【含视频】
+    - 9.2｜OpenClaw 的多入口 Agent 编排架构
+      - 9.2.1｜OpenClaw Gateway：多入口控制面
+      - 9.2.2｜OpenClaw Agent Runtime 和 Session 边界
+      - 9.2.3｜openclaw-code-agent：计划审批和交付插件
+      - 9.2.4｜Java 实现 OpenClaw 式多入口 Agent Gateway
+      - 9.2.5｜OpenClaw 的记忆机制：Workspace Memory 与 Active Memory
+    - 9.3｜Hermes Agent 源码拆解：会自我成长的长期运行 Agent
+      - 9.3.1｜Hermes Agent 架构总览：长期运行的自成长 Agent
+      - 9.3.2｜Hermes AIAgent 运行时：Prompt、Provider 与 Session
+      - 9.3.3｜Hermes Tool Registry：工具注册、可用性检查和调度
+      - 9.3.4｜Hermes Gateway：多平台入口和会话路由
+      - 9.3.5｜Hermes Memory / Skills / Delegate：自我成长闭环
+      - 9.3.6｜Java 实现 Hermes 式 Runtime 骨架
+    - 9.4｜Coding Agent 的计划审批和交付闭环
+    - 9.5｜MiMo-Code：从 OpenCode 到“越用越聪明”的工程实现
+      - 9.5.1｜先校准宣传：不是模型在线训练
+      - 9.5.2｜从 OpenCode 到 MiMo-Code：主要改造面
+      - 9.5.3｜记忆系统：Markdown 文件加 SQLite FTS5
+      - 9.5.4｜checkpoint：长任务恢复的核心
+      - 9.5.5｜History FTS：原始事实账本
+      - 9.5.6｜Dream 和 Distill：从使用轨迹里沉淀经验
+      - 9.5.7｜任务、子 Agent 和 Workflow：把记忆落到执行
+      - 9.5.8｜为什么它会越用越聪明
+      - 9.5.9｜工程风险和判断
+      - 9.5.10｜在 Java 侧可以怎么借鉴
+    - 9.6｜MiMo-Code 的无限上下文：有界窗口如何做成长会话【含视频】
+  - 10｜企业项目实战
+    - 10.1｜企业级智能运维排障 Agent
+      - 10.1.1｜业务场景与系统边界
+      - 10.1.2｜工程结构与模型配置
+      - 10.1.3｜Agent 排障流程与工具设计
+      - 10.1.4｜项目运行：告警接入、审批流与部署
+      - 10.1.5｜测试用例与验收标准
+      - 10.1.6｜本机 MySQL 环境与 SQL 初始化
+    - 10.2｜企业级 AI 客服与工单系统
+      - 10.2.1｜业务场景与系统边界
+      - 10.2.2｜整体技术方案
+        - 10.2.2｜PostgreSQL 字段说明
+      - 10.2.3｜RAG、Tool 与 Orchestrator 设计
+      - 10.2.4｜项目运行：聊天、工单与知识库
+      - 10.2.5｜测试用例与验收标准
+      - 10.2.6｜MySQL、部署与生产化改造
+  - 11｜自研 Java Coding Agent
+    - 11.1｜Coding Agent 的能力边界和运行链路
+    - 11.2｜模型配置、Prompt 和计划生成
+    - 11.3｜工具系统：文件、搜索、写入、测试和 diff
+    - 11.4｜安全边界、审批和审计日志
+    - 11.5｜Java Runtime 实现：Session、Step 和受控执行
+    - 11.6｜项目实战：coding-agent-runtime-demo
+  - 12｜AI 应用生产化
+    - 12.1｜AI 应用生产化总览
+    - 12.2｜成本控制与模型路由
+    - 12.3｜可观测性与审计日志
+    - 12.4｜评测体系与回归测试
+    - 12.5｜安全、权限与合规
+    - 12.6｜项目实战：AI 应用上线前检查台
+  - 13｜AgentScope Java 框架实战
+    - 13.1｜AgentScope Java 入门与模型配置
+    - 13.2｜ReActAgent 与工具调用
+    - 13.3｜结构化输出：让结果回到 Java 对象
+    - 13.4｜Memory、Session 与 State
+    - 13.5｜RAG 与 MCP：接知识库和外部工具
+    - 13.6｜多智能体协作：Pipeline、MsgHub、Agent as Tool、A2A
+    - 13.7｜Hook、Plan 与 Studio：可控执行和可观测性
+    - 13.8｜项目实战：客服工单处理 Agent
+  - 14｜补充资料
+    - 14.1｜简历模板与简历话术
+    - 14.2｜腾讯 AI 应用面试指南
+    - 14.3｜课程代码清单
+
+## 说明
+
+公开仓库不再提供源码下载。课程源码、运行方式、环境配置和后续更新，会通过课程资料提供。
