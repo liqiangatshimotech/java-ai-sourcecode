@@ -1,0 +1,23 @@
+name: ai-customer-service-local
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-customer-service-postgres
+    environment:
+      POSTGRES_DB: ai_customer_service
+      POSTGRES_USER: ai_customer_service
+      POSTGRES_PASSWORD: ai_customer_service_123
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - ai-customer-service-postgres-data:/var/lib/postgresql/data
+      - ../postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  ai-customer-service-postgres-data:

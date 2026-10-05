@@ -1,0 +1,16 @@
+package com.example.springairag.rag;
+
+import java.util.List;
+import java.util.Map;
+
+public record DocumentChunk(
+    String id,
+    String documentId,
+    String title,
+    String tenantId,
+    String source,
+    List<String> tags,
+    String content,
+    Map<String, String> metadata
+) {
+}

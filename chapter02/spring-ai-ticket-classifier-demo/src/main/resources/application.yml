@@ -1,0 +1,4 @@
+server:
+  port: 8082
+
+# 模型由 CourseModelConfiguration 读取 AI_PROVIDER 和供应商环境变量。

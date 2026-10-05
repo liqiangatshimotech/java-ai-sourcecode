@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+app:
+  ai:
+    # Default provider used when the request does not pass provider.
+    # Allowed values: deepseek, ollama, openai
+    default-provider: ${AI_PROVIDER:${APP_AI_DEFAULT_PROVIDER:deepseek}}
+
+    # System prompt is centralized here so later lessons can replace it with Prompt Template.
+    system-prompt: >
+      You are a helpful AI assistant for Java backend developers.
+      Answer clearly, prefer practical examples, and avoid fabricating facts.
+
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
+      temperature: 0.2
+    ollama:
+      # Local Ollama default address. Start Ollama first: ollama serve
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      # Pull before running, for example: ollama pull qwen2.5:7b
+      model: ${OLLAMA_MODEL:qwen3.5:9b}
+      temperature: ${OLLAMA_TEMPERATURE:0.7}
+
+    openai:
+      # Keep API keys outside source code. Example: export OPENAI_API_KEY=sk-...
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      model: ${OPENAI_MODEL:gpt-4o-mini}
+      temperature: ${OPENAI_TEMPERATURE:0.7}
+      max-tokens: ${OPENAI_MAX_TOKENS:1024}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    com.example.springaichat: INFO

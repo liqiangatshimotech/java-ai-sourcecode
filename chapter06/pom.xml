@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.example.ai.course</groupId>
+        <artifactId>java-ai-course-examples</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>chapter06</artifactId>
+    <packaging>pom</packaging>
+
+    <name>chapter06</name>
+    <description>Chapter 06 MCP protocol examples.</description>
+
+    <modules>
+        <module>mcp-protocol-mini-demo</module>
+        <module>spring-ai-mcp-server-demo</module>
+        <module>spring-ai-mcp-client-demo</module>
+        <module>existing-service-to-mcp-client-demo</module>
+        <module>existing-service-to-mcp-demo</module>
+        <module>langchain4j-mcp-server-demo</module>
+        <module>langchain4j-mcp-client-demo</module>
+        <module>java-mcp-repo-radar-demo</module>
+    </modules>
+</project>

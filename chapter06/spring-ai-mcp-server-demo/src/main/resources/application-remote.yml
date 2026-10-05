@@ -1,0 +1,12 @@
+server:
+  address: ${MCP_BIND_ADDRESS:0.0.0.0}
+spring:
+  ai:
+    mcp:
+      server:
+        protocol: STATELESS
+mcp:
+  auth:
+    issuer: ${MCP_ISSUER:}
+    jwk-set-uri: ${MCP_JWK_SET_URI:}
+    resource: ${MCP_RESOURCE:}

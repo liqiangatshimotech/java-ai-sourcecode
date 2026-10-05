@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: ai-customer-service-system
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRES_URL:jdbc:postgresql://127.0.0.1:${POSTGRES_PORT:5433}/ai_customer_service}
+    username: ${POSTGRES_USERNAME:ai_customer_service}
+    password: ${POSTGRES_PASSWORD:ai_customer_service_123}
+    hikari:
+      pool-name: ai-customer-service-pool
+      maximum-pool-size: ${POSTGRES_POOL_SIZE:5}
+      connection-timeout: 3000
+
+server:
+  port: ${SERVER_PORT:8080}
+
+support:
+  auth:
+    enabled: ${SUPPORT_AUTH_ENABLED:true}
+    tenant: ${SUPPORT_TENANT:course}
+    identities: ${SUPPORT_AUTH_IDENTITIES:[]}
+  ai:
+    # 默认使用 DeepSeek；也支持 AI_PROVIDER=ollama 或 AI_PROVIDER=chatgpt。
+    provider: ${AI_PROVIDER:deepseek}
+  storage:
+    # SUPPORT_STORAGE=postgres 使用 PostgreSQL + pgvector；memory 可在没有 Docker 时完整体验业务流程。
+    type: ${SUPPORT_STORAGE:postgres}
+  rag:
+    embedding:
+      # hashing 是离线算法演示；remote 才会调用真实语义向量模型，聊天模型仍默认 DeepSeek。
+      mode: ${RAG_EMBEDDING_MODE:hashing}
+      base-url: ${RAG_EMBEDDING_BASE_URL:}
+      api-key: ${RAG_EMBEDDING_API_KEY:}
+      model: ${RAG_EMBEDDING_MODEL:}
+      dimensions: ${RAG_EMBEDDING_DIMENSIONS:64}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true

@@ -19,6 +19,7 @@
 - MCP、Skills、Agentic Workflow 如何落到 Java 工程结构里。
 - 企业级 AI 客服、智能运维排障、Coding Agent、生产化检查台如何设计和实现。
 - 成本、审计、权限、安全、评测、上线前检查这些生产问题如何提前处理。
+- A2A 协议如何用 Agent Card、Message、Task、Artifact 和多轮任务把 Agent 之间的协作标准化。
 
 ## 如何购买
 
@@ -322,11 +323,14 @@
     - 10.2｜企业级 AI 客服与工单系统
       - 10.2.1｜业务场景与系统边界
       - 10.2.2｜整体技术方案
-        - 10.2.2｜PostgreSQL 字段说明
+        - 10.2.2.1｜PostgreSQL 数据字典
       - 10.2.3｜RAG、Tool 与 Orchestrator 设计
-      - 10.2.4｜项目运行：聊天、工单与知识库
-      - 10.2.5｜测试用例与验收标准
-      - 10.2.6｜MySQL、部署与生产化改造
+      - 10.2.4｜项目运行：会话、工单、知识库与审计
+      - 10.2.5｜工单状态、SLA 与协作闭环
+      - 10.2.6｜知识运营、RAG 召回与评测
+      - 10.2.7｜模型编排、Tool、护栏与 AI Run
+      - 10.2.8｜运营驾驶舱与当前反馈边界
+      - 10.2.9｜测试、部署、监控与故障演练
   - 11｜自研 Java Coding Agent
     - 11.1｜Coding Agent 的能力边界和运行链路
     - 11.2｜模型配置、Prompt 和计划生成
@@ -350,6 +354,20 @@
     - 13.6｜多智能体协作：Pipeline、MsgHub、Agent as Tool、A2A
     - 13.7｜Hook、Plan 与 Studio：可控执行和可观测性
     - 13.8｜项目实战：客服工单处理 Agent
+  - 13-1｜AgentScope Java 2.0 生产化实战
+    - 13-1.1｜AgentScope Java 2.0 与 1.x 的差异
+    - 13-1.2｜Agent、消息与 RuntimeContext
+    - 13-1.3｜模型接入：DeepSeek、Ollama 与 ChatGPT
+    - 13-1.4｜Tool、Permission 与 Human-in-the-Loop
+    - 13-1.5｜Middleware、事件流与可观测性
+    - 13-1.6｜AgentStateStore、Session 与多租户隔离
+    - 13-1.7｜HarnessAgent、Workspace、Memory 与 Plan Mode
+    - 13-1.8｜Subagent、Sandbox、A2A/MCP 与生产部署
+    - 13-1.9｜OpenAI Java SDK 接入与最佳实践
+    - 13-1.10｜Google Gen AI Java SDK 接入与最佳实践
+    - 13-1.11｜Anthropic Java SDK 接入与最佳实践
+    - 13-1.12｜阿里云百炼 DashScope 模型接入与最佳实践
+    - 13-1.13｜项目实战：agentscope-java-2-runtime-demo
   - 14｜补充资料
     - 14.1｜简历模板与简历话术
     - 14.2｜腾讯 AI 应用面试指南

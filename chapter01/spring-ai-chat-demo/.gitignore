@@ -1,0 +1,9 @@
+target/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Never commit local secrets. Use environment variables instead.
+.env
+*.local

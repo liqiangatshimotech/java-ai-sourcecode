@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.example.ai.course</groupId>
+        <artifactId>java-ai-course-examples</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>chapter13-1</artifactId>
+    <packaging>pom</packaging>
+
+    <name>chapter13-1</name>
+    <description>AgentScope Java 2.0 examples.</description>
+
+    <modules>
+        <module>openai-java-sdk-demo</module>
+        <module>google-genai-sdk-demo</module>
+        <module>anthropic-java-sdk-demo</module>
+        <module>bailian-dashscope-model-demo</module>
+        <module>agentscope-java-2-runtime-demo</module>
+    </modules>
+</project>

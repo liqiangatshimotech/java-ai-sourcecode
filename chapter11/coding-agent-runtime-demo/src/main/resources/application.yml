@@ -1,0 +1,12 @@
+server:
+  port: ${SERVER_PORT:18081}
+
+spring:
+  application:
+    name: coding-agent-runtime-demo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

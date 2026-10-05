@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: enterprise-ops-mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: enterprise_ops_agent
+      MYSQL_USER: ops_agent
+      MYSQL_PASSWORD: ops_agent_123
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - enterprise_ops_mysql_data:/var/lib/mysql
+
+volumes:
+  enterprise_ops_mysql_data:

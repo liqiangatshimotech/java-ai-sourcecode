@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工单详情 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1 id="ticketPageTitle">工单详情</h1><p id="ticketPageSubtitle">读取工单信息...</p></div>
+          <div class="page-actions"><a class="button secondary" href="./tickets.html">返回列表</a><a class="button secondary" id="linkedConversation" href="./reception.html" hidden>查看关联会话</a></div>
+        </div>
+        <div id="ticketDetailRoot"><div class="empty-state"><span class="spinner"></span></div></div>
+      </div>
+    </main>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/ticket-detail.js"></script>
+</body>
+</html>

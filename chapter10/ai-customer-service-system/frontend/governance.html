@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服 AI 运行审计与护栏监控">
+  <title>AI 运行审计 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>AI 运行审计</h1><p>从一次模型请求回溯意图、知识证据、工具调用、风险护栏和最终处理方式，而不是展示静态代码目录。</p></div>
+          <div class="page-actions"><button class="button secondary" id="refreshAudit" type="button"></button></div>
+        </div>
+        <section class="stats-row" aria-label="AI 运行指标">
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="auditIconRuns"></span><span class="stat-copy"><span>运行次数</span><strong id="auditStatRuns">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="auditIconLatency"></span><span class="stat-copy"><span>平均耗时</span><strong id="auditStatLatency">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="auditIconGuardrail"></span><span class="stat-copy"><span>护栏命中</span><strong id="auditStatGuardrail">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="auditIconHandoff"></span><span class="stat-copy"><span>转人工</span><strong id="auditStatHandoff">--</strong></span></article>
+        </section>
+        <div class="audit-layout">
+          <section class="surface data-surface">
+            <div class="surface-head"><div><h2>模型运行记录</h2><p>每条记录使用 requestId 贯穿会话、模型、知识和工具链路。</p></div><span class="result-count" id="auditResultCount">--</span></div>
+            <div class="filter-bar"><div class="input-with-icon"><span id="auditSearchIcon"></span><input id="auditKeyword" type="search" placeholder="搜索 requestId、会话或意图"></div><select id="auditOutcomeFilter"><option value="">全部结果</option><option value="RUNNING">执行中</option><option value="CACHED">缓存命中</option><option value="AGENT_REVIEW">建议已生成</option><option value="HANDOFF">转人工</option><option value="ERROR">异常</option></select><div class="filter-spacer"></div></div>
+            <div class="audit-run-list" id="auditRunList"><div class="empty-state"><span class="spinner"></span></div></div>
+          </section>
+          <aside class="detail-column">
+            <section class="surface">
+              <div class="surface-head"><div><h2>当前运行配置</h2><p>密钥不会返回前端。</p></div></div>
+              <div class="surface-body" id="auditRuntime"><div class="empty-state compact"><span class="spinner"></span></div></div>
+            </section>
+            <section class="surface">
+              <div class="surface-head"><div><h2>护栏覆盖</h2><p>线上请求可能触发的治理策略。</p></div><span class="pill green" id="guardrailCoverage">--</span></div>
+              <div class="surface-body"><div class="guardrail-list" id="guardrailList"><div class="empty-state compact"><span class="spinner"></span></div></div></div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="runModal" role="dialog" aria-modal="true" aria-labelledby="runModalTitle">
+    <div class="modal" style="width:min(760px,100%)">
+      <div class="modal-head"><div><h3 id="runModalTitle">运行详情</h3><p class="subtle" id="runModalSubtitle"></p></div><button class="icon-button" id="closeRunModal" aria-label="关闭"></button></div>
+      <div class="modal-body" id="runModalBody"></div>
+    </div>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/governance.js"></script>
+</body>
+</html>

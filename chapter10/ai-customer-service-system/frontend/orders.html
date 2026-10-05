@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服订单与售后业务中心">
+  <title>订单与售后 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>订单与售后</h1><p>统一查看订单归属、履约状态与风险标签，为客服回复和退款决策提供可靠业务依据。</p></div>
+          <div class="page-actions"><button class="button secondary" id="refreshOrders" type="button"></button></div>
+        </div>
+        <section class="stats-row" aria-label="订单指标">
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="orderStatIconAll"></span><span class="stat-copy"><span>订单总数</span><strong id="orderStatAll">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="orderStatIconShipping"></span><span class="stat-copy"><span>履约中</span><strong id="orderStatShipping">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="orderStatIconRefund"></span><span class="stat-copy"><span>退款处理中</span><strong id="orderStatRefund">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="orderStatIconRisk"></span><span class="stat-copy"><span>高风险订单</span><strong id="orderStatRisk">--</strong></span></article>
+        </section>
+        <section class="surface data-surface">
+          <div class="surface-head"><div><h2>订单列表</h2><p>详情与状态动作进入独立页面处理，保留清晰业务上下文。</p></div><span class="result-count" id="orderResultCount">--</span></div>
+          <div class="filter-bar">
+            <div class="input-with-icon"><span id="orderSearchIcon"></span><input id="orderKeyword" type="search" placeholder="搜索订单号、客户或商品"></div>
+            <select id="orderStatusFilter"><option value="">全部状态</option><option value="PAID_PICKING">待拣货</option><option value="SHIPPED">运输中</option><option value="DELIVERED">已签收</option><option value="REFUNDING">退款中</option><option value="CLOSED">已关闭</option></select>
+            <select id="orderRiskFilter"><option value="">全部风险</option><option value="HIGH_VALUE">高客单</option><option value="FINANCE_REVIEW">财务复核</option><option value="NORMAL">常规</option><option value="LOW">低风险</option></select>
+            <div class="filter-spacer"></div><button class="button secondary small" id="clearOrderFilters" type="button">重置筛选</button>
+          </div>
+          <div class="table-wrap" id="ordersResult"></div>
+          <div class="table-footer"><span id="orderFooterText">--</span><div class="pagination"><button class="active" type="button">1</button></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/orders.js"></script>
+</body>
+</html>

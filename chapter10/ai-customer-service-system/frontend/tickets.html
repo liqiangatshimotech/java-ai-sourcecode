@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服工单协作中心">
+  <title>工单协作 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>工单协作</h1><p>管理需要跨团队处理的售后事项，围绕负责人、SLA 和事件时间线完成闭环。</p></div>
+          <div class="page-actions"><a class="button secondary" href="./reception.html">返回会话收件箱</a><button class="button" id="refreshTickets" type="button"></button></div>
+        </div>
+
+        <section class="stats-row" aria-label="工单指标">
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="ticketStatIconOpen"></span><span class="stat-copy"><span>未结工单</span><strong id="ticketStatOpen">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="ticketStatIconAssigned"></span><span class="stat-copy"><span>处理中</span><strong id="ticketStatAssigned">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="ticketStatIconRisk"></span><span class="stat-copy"><span>SLA 风险</span><strong id="ticketStatRisk">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="ticketStatIconResolved"></span><span class="stat-copy"><span>今日已解决</span><strong id="ticketStatResolved">--</strong></span></article>
+        </section>
+
+        <section class="surface data-surface">
+          <div class="surface-head"><div><h2>工单列表</h2><p>点击工单号进入独立详情页，避免列表与多组处理表单挤在同一视图。</p></div><span class="result-count" id="ticketResultCount">--</span></div>
+          <div class="filter-bar">
+            <div class="input-with-icon"><span id="ticketSearchIcon"></span><input id="ticketKeyword" type="search" placeholder="搜索工单号、客户或问题"></div>
+            <select id="ticketStatusFilter"><option value="">全部状态</option><option value="NEW">待受理</option><option value="ASSIGNED">处理中</option><option value="WAITING_CUSTOMER">等待客户</option><option value="RESOLVED">已解决</option></select>
+            <select id="ticketPriorityFilter"><option value="">全部优先级</option><option value="URGENT">紧急</option><option value="HIGH">高</option><option value="NORMAL">普通</option></select>
+            <div class="filter-spacer"></div>
+            <button class="button secondary small" id="clearTicketFilters" type="button">重置筛选</button>
+          </div>
+          <div class="table-wrap" id="ticketsResult">${""}</div>
+          <div class="table-footer"><span id="ticketFooterText">--</span><div class="pagination"><button class="active" type="button">1</button></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/tickets.js"></script>
+</body>
+</html>

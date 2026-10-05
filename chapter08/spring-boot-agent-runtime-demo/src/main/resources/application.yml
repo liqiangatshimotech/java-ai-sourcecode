@@ -1,0 +1,11 @@
+ai:
+  model:
+    # 默认使用 DeepSeek；这里的配置对象可以直接交给真实 HTTP 模型适配器。
+    provider: ${AI_PROVIDER:deepseek}
+    base-url: ${AI_BASE_URL:https://api.deepseek.com}
+    model-name: ${AI_MODEL:deepseek-v4-flash}
+    # AI_API_KEY 可统一覆盖；否则依次读取 DeepSeek / OpenAI 的标准密钥变量。
+    api-key: ${AI_API_KEY:${DEEPSEEK_API_KEY:${OPENAI_API_KEY:}}}
+  runtime:
+    max-steps: ${AI_MAX_STEPS:8}
+    session-history-limit: ${AI_SESSION_HISTORY_LIMIT:20}

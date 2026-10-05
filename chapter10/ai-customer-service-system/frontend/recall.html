@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服 RAG 评测实验室">
+  <title>RAG 评测实验室 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head"><div><h1>RAG 评测实验室</h1><p>用有明确预期文档的客服问题验证 Top-K 召回、排序和知识版本，避免只凭“看起来相关”判断效果。</p></div><div class="page-actions"><a class="button secondary" href="./knowledge.html">返回知识运营</a></div></div>
+        <div class="eval-layout">
+          <section class="surface eval-form">
+            <div class="surface-head"><div><h2>单条检索实验</h2><p>从问题集选择案例，也可以输入临时问题。</p></div></div>
+            <div class="surface-body">
+              <div class="field"><label for="knowledgeQuery">客户问题</label><textarea id="knowledgeQuery" rows="4">企业客户的订单已经进仓拣货，现在还能直接退款吗？</textarea></div>
+              <div class="form-grid" style="margin-top:12px">
+                <div class="field"><label for="expectedDocument">预期文档</label><input id="expectedDocument" value="KB-REFUND-001"></div>
+                <div class="field"><label for="knowledgeLimit">Top-K</label><select id="knowledgeLimit"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="10">10</option></select></div>
+              </div>
+              <button class="button" id="searchKnowledge" style="width:100%;margin-top:13px" type="button"></button>
+              <div style="margin-top:18px"><span class="section-kicker">黄金问题集</span><div class="eval-example-list" id="evalExamples"></div></div>
+            </div>
+          </section>
+          <div class="detail-column">
+            <section class="surface" id="evalSummary">
+              <div class="surface-head"><div><h2>本次评测结论</h2><p>执行检索后生成命中与排序判断。</p></div></div>
+              <div class="surface-body"><div class="empty-state compact"><div class="empty-icon" id="evalEmptyIcon"></div><strong>等待执行</strong><p>结果会对照预期文档计算 Hit@K 和首位命中。</p></div></div>
+            </section>
+            <section class="surface">
+              <div class="surface-head"><div><h2>召回结果</h2><p id="retrievalMeta">只检索已发布并完成向量同步的知识。</p></div><span class="result-count" id="retrievalCount">--</span></div>
+              <div class="surface-body" id="knowledgeResult"><div class="empty-state"><div class="empty-icon" id="resultEmptyIcon"></div><strong>还没有检索结果</strong><p>输入问题并运行评测</p></div></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/recall.js"></script>
+</body>
+</html>

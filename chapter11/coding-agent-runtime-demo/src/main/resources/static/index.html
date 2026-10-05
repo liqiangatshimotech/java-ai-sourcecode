@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Coding Agent 控制台</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">CA</div>
+            <div>
+                <div class="brand-title">Coding Agent</div>
+                <div class="brand-subtitle">Java Runtime Console</div>
+            </div>
+        </div>
+
+        <section class="runtime-panel">
+            <div class="section-label">运行配置</div>
+            <dl class="runtime-grid" id="runtimeGrid">
+                <dt>Provider</dt><dd>Loading</dd>
+                <dt>Model</dt><dd>Loading</dd>
+                <dt>API Key</dt><dd>Loading</dd>
+            </dl>
+        </section>
+
+        <section class="task-create">
+            <div class="section-label">新建任务</div>
+            <label>
+                仓库
+                <input id="repositoryName" value="billing-service">
+            </label>
+            <label>
+                分支
+                <input id="branchName" value="feature/member-discount-limit">
+            </label>
+            <label>
+                发起人
+                <input id="operator" value="course-demo">
+            </label>
+            <label>
+                需求描述
+                <textarea id="description">把会员折扣上限从 20% 调整为 30%，同时不要修改 calculateFinalPrice 的方法签名。</textarea>
+            </label>
+            <button class="primary-action" id="createTaskButton">提交代码任务</button>
+        </section>
+    </aside>
+
+    <main class="workspace">
+        <header class="topbar">
+            <div>
+                <h1>企业代码任务中心</h1>
+                <p>提交、审批、执行、测试和交付 diff 都在同一个受控工作流里完成。</p>
+            </div>
+            <div class="topbar-actions">
+                <button id="refreshButton">刷新</button>
+                <a class="text-link" href="/actuator/health" target="_blank" rel="noreferrer">健康检查</a>
+            </div>
+        </header>
+
+        <section class="metrics" id="metrics">
+            <div class="metric">
+                <span class="metric-value">0</span>
+                <span class="metric-label">全部任务</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">0</span>
+                <span class="metric-label">待审批</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">0</span>
+                <span class="metric-label">已完成</span>
+            </div>
+            <div class="metric">
+                <span class="metric-value">0</span>
+                <span class="metric-label">失败</span>
+            </div>
+        </section>
+
+        <div class="content-grid">
+            <section class="task-list-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>任务队列</h2>
+                        <p>按更新时间倒序展示。</p>
+                    </div>
+                </div>
+                <div class="task-list" id="taskList"></div>
+            </section>
+
+            <section class="detail-panel">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-visual"></div>
+                    <h2>还没有选择任务</h2>
+                    <p>提交一个代码任务，或在左侧任务队列中选择已有任务。</p>
+                </div>
+
+                <article class="task-detail hidden" id="taskDetail">
+                    <div class="detail-header">
+                        <div>
+                            <div class="breadcrumb">代码任务 / <span id="detailTaskId"></span></div>
+                            <h2 id="detailTitle"></h2>
+                            <p id="detailDescription"></p>
+                        </div>
+                        <span class="status-badge" id="detailStatus"></span>
+                    </div>
+
+                    <div class="action-strip">
+                        <div>
+                            <div class="muted-label">仓库和分支</div>
+                            <strong id="detailRepo"></strong>
+                        </div>
+                        <div>
+                            <div class="muted-label">发起人</div>
+                            <strong id="detailOperator"></strong>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="approveButton">审批通过</button>
+                            <button class="primary-action" id="runButton">执行当前提案</button>
+                            <button id="repairButton">生成一次修复提案</button>
+                        </div>
+                    </div>
+
+                    <div class="tabbar" role="tablist">
+                        <button class="tab active" data-tab="timeline">执行轨迹</button>
+                        <button class="tab" data-tab="diff">Diff</button>
+                        <button class="tab" data-tab="source">源码</button>
+                    </div>
+
+                    <section class="tab-panel" id="timelinePanel">
+                        <div class="steps" id="steps"></div>
+                        <div class="audit-box">
+                            <h3>审计日志</h3>
+                            <ul id="auditEvents"></ul>
+                        </div>
+                    </section>
+
+                    <section class="tab-panel hidden" id="diffPanel">
+                        <pre class="code-block" id="diffOutput"></pre>
+                    </section>
+
+                    <section class="tab-panel hidden" id="sourcePanel">
+                        <div class="source-toolbar">
+                            <select id="sourcePath">
+                                <option value="src/main/java/com/acme/billing/PriceCalculator.java">PriceCalculator.java</option>
+                                <option value="src/test/java/com/acme/billing/PriceCalculatorTest.java">PriceCalculatorTest.java</option>
+                            </select>
+                            <button id="loadSourceButton">读取文件</button>
+                        </div>
+                        <pre class="code-block" id="sourceOutput"></pre>
+                    </section>
+                </article>
+            </section>
+        </div>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>

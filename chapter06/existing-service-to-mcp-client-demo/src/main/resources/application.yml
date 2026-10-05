@@ -1,0 +1,47 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: existing-service-to-mcp-client-demo
+  ai:
+    mcp:
+      client:
+        enabled: ${MCP_CLIENT_ENABLED:true}
+        initialized: ${MCP_CLIENT_INITIALIZED:true}
+        name: existing-service-support-client
+        version: 0.1.0
+        type: SYNC
+        request-timeout: 20s
+        toolcallback:
+          enabled: true
+        streamable-http:
+          connections:
+            commerce:
+              url: ${COMMERCE_MCP_BASE_URL:http://localhost:8082}
+              endpoint: ${COMMERCE_MCP_ENDPOINT:/mcp}
+
+app:
+  ai:
+    default-provider: ${APP_AI_DEFAULT_PROVIDER:deepseek}
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+      model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
+      temperature: ${DEEPSEEK_TEMPERATURE:0.2}
+      max-tokens: ${DEEPSEEK_MAX_TOKENS:1024}
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      model: ${OLLAMA_MODEL:qwen3.5:9b}
+      temperature: ${OLLAMA_TEMPERATURE:0.2}
+    chatgpt:
+      api-key: ${CHATGPT_API_KEY:${OPENAI_API_KEY:}}
+      base-url: ${CHATGPT_BASE_URL:https://api.openai.com}
+      model: ${CHATGPT_MODEL:gpt-4o-mini}
+      temperature: ${CHATGPT_TEMPERATURE:0.2}
+      max-tokens: ${CHATGPT_MAX_TOKENS:1024}
+
+logging:
+  level:
+    com.example.existingservicemcpclient: INFO
+    org.springframework.ai.mcp: INFO

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服平台设置">
+  <title>平台设置 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head"><div><h1>平台设置</h1><p>查看模型、存储和服务队列配置。生产环境的密钥只通过环境变量或密钥管理系统注入。</p></div></div>
+        <div class="settings-layout">
+          <aside class="surface settings-menu">
+            <button class="active" type="button" data-settings="model"><span>✦</span>模型供应商</button>
+            <button type="button" data-settings="connection"><span id="settingIconConnection"></span>开发连接</button>
+            <button type="button" data-settings="queue"><span id="settingIconQueue"></span>团队与队列</button>
+            <button type="button" data-settings="channel"><span id="settingIconChannel"></span>渠道接入</button>
+          </aside>
+          <div>
+            <section class="settings-section active" data-settings-section="model">
+              <div class="surface">
+                <div class="surface-head"><div><h2>模型供应商</h2><p>DeepSeek 为默认配置，Ollama 和 ChatGPT 通过 OpenAI-compatible 协议切换。</p></div><span id="modelConfigState"></span></div>
+                <div class="surface-body"><div class="provider-grid" id="providerGrid"></div></div>
+              </div>
+              <div class="surface" style="margin-top:15px">
+                <div class="surface-head"><div><h2>当前运行参数</h2><p>仅显示安全摘要，不返回 API Key。</p></div><button class="button secondary small" id="refreshRuntime" type="button">刷新状态</button></div>
+                <div class="surface-body" id="runtimeDetail"><div class="empty-state compact"><span class="spinner"></span></div></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings-section="connection">
+              <div class="surface">
+                <div class="surface-head"><div><h2>本地开发连接</h2><p>JAR 内置页面不需要设置；前后端分开调试时可以覆盖 API 地址。</p></div></div>
+                <div class="surface-body"><div class="form-grid"><div class="field full"><label for="accessToken">客服访问凭据（仅保留在当前浏览器会话）</label><input id="accessToken" type="password" autocomplete="off" placeholder="由服务端管理员分配，非模型密钥"><label for="apiBase">Spring Boot API 地址</label><input id="apiBase" value="http://localhost:18081" placeholder="http://localhost:18081"></div></div><div class="inline-actions" style="margin-top:12px"><button class="button" id="saveApiBase" type="button">保存并测试</button><button class="button secondary" id="resetApiBase" type="button">恢复默认</button></div><div class="health-strip" id="connectionResult" hidden style="margin:14px 0 0"></div></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings-section="queue">
+              <div class="surface data-surface">
+                <div class="surface-head"><div><h2>团队与队列</h2><p>课程版提供三类服务队列，生产系统应由管理员配置路由规则和数据权限。</p></div></div>
+                <div class="table-wrap"><table class="data-table"><thead><tr><th>队列</th><th>覆盖意图</th><th>服务时段</th><th>目标首响</th><th>状态</th></tr></thead><tbody><tr><td><strong>售后服务队列</strong></td><td>退款、物流、订单</td><td>7 × 24 小时</td><td>60 秒</td><td>${pill("运行中", "green")}</td></tr><tr><td><strong>企业客户专线</strong></td><td>企业订单、高价值售后</td><td>09:00 - 21:00</td><td>30 秒</td><td>${pill("运行中", "green")}</td></tr><tr><td><strong>发票服务队列</strong></td><td>开票、重开、专票校验</td><td>09:00 - 18:00</td><td>120 秒</td><td>${pill("运行中", "green")}</td></tr></tbody></table></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings-section="channel">
+              <div class="surface data-surface">
+                <div class="surface-head"><div><h2>渠道接入</h2><p>同一会话模型可以承接不同渠道，渠道适配层负责验签、幂等和消息格式转换。</p></div></div>
+                <div class="table-wrap"><table class="data-table"><thead><tr><th>渠道</th><th>接入方式</th><th>消息能力</th><th>最近心跳</th><th>状态</th></tr></thead><tbody><tr><td><strong>官网在线咨询</strong></td><td>WebSocket / REST</td><td>文本、图片、文件</td><td>刚刚</td><td>${pill("正常", "green")}</td></tr><tr><td><strong>App 客服</strong></td><td>移动端 SDK</td><td>文本、订单卡片</td><td>1 分钟前</td><td>${pill("正常", "green")}</td></tr><tr><td><strong>微信客服</strong></td><td>Webhook</td><td>文本、图片</td><td>尚未接入</td><td>${pill("待配置", "amber")}</td></tr></tbody></table></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/settings.js"></script>
+</body>
+</html>

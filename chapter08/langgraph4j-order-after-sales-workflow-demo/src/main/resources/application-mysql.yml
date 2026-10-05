@@ -1,0 +1,6 @@
+aftersales:
+  checkpoint:
+    type: mysql
+    jdbc-url: ${MYSQL_JDBC_URL:jdbc:mysql://localhost:3306/langgraph4j_demo?useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_JDBC_USER:root}
+    password: ${MYSQL_JDBC_PASSWORD:}

@@ -1,0 +1,7 @@
+aftersales:
+  ai:
+    enabled: true
+    provider: ollama
+    api-key: ""
+    base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+    model: ${OLLAMA_MODEL:qwen2.5:7b}

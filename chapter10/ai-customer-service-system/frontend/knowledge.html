@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服知识运营中心">
+  <title>知识运营 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>知识运营</h1><p>通过草稿、审核、发布和下线管理知识生命周期，只有审核发布的版本才进入客服 RAG。</p></div>
+          <div class="page-actions"><a class="button secondary" href="./recall.html">进入 RAG 评测</a><button class="button" id="openImportModal" type="button"></button></div>
+        </div>
+        <section class="stats-row" aria-label="知识指标">
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="knowledgeIconAll"></span><span class="stat-copy"><span>知识总数</span><strong id="knowledgeStatAll">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="knowledgeIconPublished"></span><span class="stat-copy"><span>已发布</span><strong id="knowledgeStatPublished">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="knowledgeIconReview"></span><span class="stat-copy"><span>待审核</span><strong id="knowledgeStatReview">--</strong></span></article>
+          <article class="stat-card card-hover-lift"><span class="stat-icon" id="knowledgeIconDraft"></span><span class="stat-copy"><span>草稿</span><strong id="knowledgeStatDraft">--</strong></span></article>
+        </section>
+        <div class="knowledge-layout">
+          <aside class="surface knowledge-sidebar">
+            <div class="surface-head"><div><h2>知识空间</h2><p>按生命周期查看</p></div></div>
+            <button class="knowledge-nav-item active" type="button" data-knowledge-status=""><span>全部知识</span><em id="knowledgeNavAll">--</em></button>
+            <button class="knowledge-nav-item" type="button" data-knowledge-status="DRAFT"><span>我的草稿</span><em id="knowledgeNavDraft">--</em></button>
+            <button class="knowledge-nav-item" type="button" data-knowledge-status="REVIEWING"><span>审核队列</span><em id="knowledgeNavReview">--</em></button>
+            <button class="knowledge-nav-item" type="button" data-knowledge-status="PUBLISHED"><span>线上知识</span><em id="knowledgeNavPublished">--</em></button>
+            <button class="knowledge-nav-item" type="button" data-knowledge-status="DISABLED"><span>已下线</span><em id="knowledgeNavDisabled">--</em></button>
+          </aside>
+          <section class="surface data-surface">
+            <div class="surface-head"><div><h2>知识文档</h2><p>发布操作与草稿编写分离，降低错误知识直接上线的风险。</p></div><span class="result-count" id="knowledgeResultCount">--</span></div>
+            <div class="filter-bar"><div class="input-with-icon"><span id="knowledgeSearchIcon"></span><input id="knowledgeKeyword" type="search" placeholder="搜索标题、正文或文档 ID"></div><select id="knowledgeSourceFilter"><option value="">全部来源</option><option value="BUILT_IN">内置</option><option value="FEISHU_DOC">飞书文档</option><option value="MARKDOWN">Markdown</option><option value="MANUAL">手工录入</option><option value="TICKET">历史工单</option></select><div class="filter-spacer"></div><button class="button secondary small" id="refreshKnowledge" type="button">刷新</button></div>
+            <div class="table-wrap" id="knowledgeDocumentsResult"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="importModal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+    <div class="modal">
+      <div class="modal-head"><div><h3 id="importTitle">导入知识草稿</h3><p class="subtle">导入后需要另一角色审核发布</p></div><button class="icon-button" id="closeImportModal" aria-label="关闭"></button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field full"><label for="knowledgeTitle">标题</label><input id="knowledgeTitle" placeholder="例如：企业客户发货拦截规则"></div>
+          <div class="field"><label for="knowledgeVersion">版本</label><input id="knowledgeVersion" value="v2026.07"></div>
+          <div class="field"><label for="knowledgeSourceType">来源类型</label><select id="knowledgeSourceType"><option value="MANUAL">手工录入</option><option value="FEISHU_DOC">飞书文档</option><option value="MARKDOWN">Markdown</option><option value="TICKET">历史工单</option></select></div>
+          <div class="field full"><label for="knowledgeSourceName">来源名称</label><input id="knowledgeSourceName" placeholder="例如：售后 SOP / 发货拦截"></div>
+          <div class="field full"><label for="knowledgeContent">知识正文</label><textarea id="knowledgeContent" rows="8" placeholder="写清适用范围、判断条件、例外和需要人工确认的边界"></textarea></div>
+        </div>
+        <div id="knowledgeCreateResult" class="subtle" style="margin-top:10px"></div>
+      </div>
+      <div class="modal-foot"><button class="button secondary" id="cancelImportModal" type="button">取消</button><button class="button" id="importKnowledge" type="button">导入为草稿</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="chunkModal" role="dialog" aria-modal="true" aria-labelledby="chunkTitle">
+    <div class="modal">
+      <div class="modal-head"><div><h3 id="chunkTitle">Chunk 预览</h3><p class="subtle">检查语义切分是否保留完整业务规则</p></div><button class="icon-button" id="closeChunkModal" aria-label="关闭"></button></div>
+      <div class="modal-body" id="chunkModalBody"></div>
+    </div>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/knowledge.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+server:
+  port: 8083
+
+# 模型由 CourseModelConfiguration 读取 AI_PROVIDER 和供应商环境变量。
+
+app:
+  ticket-copilot:
+    max-attempts: ${TICKET_COPILOT_MAX_ATTEMPTS:2}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    com.example.supportticketcopilot: INFO

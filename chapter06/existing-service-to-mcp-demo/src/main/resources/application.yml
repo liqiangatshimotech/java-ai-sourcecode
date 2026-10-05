@@ -1,0 +1,23 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: existing-service-to-mcp-demo
+  ai:
+    mcp:
+      server:
+        name: support-ticket-mcp-server
+        version: 0.1.0
+        type: SYNC
+        protocol: STREAMABLE
+        instructions: "Expose the existing support-ticket service as safe MCP tools, resources, and prompts."
+        annotation-scanner:
+          enabled: true
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true
+          completion: false
+        streamable-http:
+          mcp-endpoint: /mcp

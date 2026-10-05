@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: langgraph4j-order-after-sales-workflow-demo
+
+server:
+  port: ${SERVER_PORT:8080}
+
+aftersales:
+  ai:
+    # 课程默认供应商是 DeepSeek。未设 AI_ENABLED 时使用离线规则助手，方便先跑状态图。
+    enabled: ${AI_ENABLED:false}
+    provider: ${AI_PROVIDER:deepseek}
+    api-key: ${DEEPSEEK_API_KEY:}
+    base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
+    temperature: ${AI_TEMPERATURE:0.0}
+  checkpoint:
+    type: ${CHECKPOINT_TYPE:memory}
+    jdbc-url: ${MYSQL_JDBC_URL:jdbc:mysql://localhost:3306/langgraph4j_demo?useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_JDBC_USER:root}
+    password: ${MYSQL_JDBC_PASSWORD:}
+  workflow:
+    max-clarification-rounds: ${MAX_CLARIFICATION_ROUNDS:3}
+    recursion-limit: ${GRAPH_RECURSION_LIMIT:40}

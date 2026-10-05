@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星桥客服全渠道会话收件箱与 AI 坐席辅助工作台">
+  <title>会话收件箱 · 星桥客服</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="content">
+      <header class="topbar" id="topbar"></header>
+      <div class="page workspace-page">
+        <div class="inbox-layout">
+          <section class="conversation-pane" aria-label="会话列表">
+            <div class="inbox-head">
+              <div class="inbox-title-row"><h1>会话收件箱</h1><span class="count-badge" id="conversationCount">--</span></div>
+              <div class="input-with-icon inbox-search"><span id="conversationSearchIcon"></span><input id="conversationSearch" type="search" placeholder="搜索客户、内容或会话号"></div>
+              <div class="inbox-views" role="tablist">
+                <button class="inbox-view active" type="button" data-view="ALL">全部</button>
+                <button class="inbox-view" type="button" data-view="MY">我的会话</button>
+                <button class="inbox-view" type="button" data-view="WAITING">待领取</button>
+                <button class="inbox-view" type="button" data-view="URGENT">紧急</button>
+                <button class="inbox-view" type="button" data-view="WAITING_CUSTOMER">等客户</button>
+              </div>
+            </div>
+            <div class="conversation-list" id="conversationList">
+              <div class="empty-state compact"><span class="spinner"></span></div>
+            </div>
+          </section>
+
+          <section class="chat-pane" id="chatPane" aria-label="会话工作台">
+            <div class="chat-header" id="chatHeader" hidden>
+              <button class="icon-button" id="mobileBack" type="button" aria-label="返回会话列表" hidden></button>
+              <div class="customer-avatar" id="chatAvatar">--</div>
+              <div class="chat-customer">
+                <div class="chat-customer-line"><h2 id="chatCustomerName">--</h2><span id="chatStatus"></span><span id="chatPriority"></span></div>
+                <p id="chatMeta">--</p>
+              </div>
+              <div class="chat-actions">
+                <button class="button secondary small" id="claimConversation" type="button" hidden>领取会话</button>
+                <button class="button ghost small" id="waitConversation" type="button" hidden>等待客户</button>
+                <button class="button ghost small" id="transferConversation" type="button" hidden>转接</button>
+                <button class="button success small" id="resolveConversation" type="button" hidden>解决</button>
+                <button class="icon-button" id="toggleContext" type="button" aria-label="客户资料"></button>
+              </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+              <div class="empty-state">
+                <div class="empty-icon" id="emptyChatIcon"></div>
+                <strong>选择一条会话开始处理</strong>
+                <p>从左侧队列进入真实客户会话，查看消息、客户资料和 AI 回复建议。</p>
+              </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator" hidden>
+              <span></span><span></span><span></span>
+              <span style="font-size:11px;color:var(--ink-500);margin-left:4px">AI 正在思考...</span>
+            </div>
+
+            <section class="ai-draft-card" id="aiDraftCard" hidden>
+              <div class="ai-draft-head"><span class="ai-badge">✦</span><span>AI 回复建议</span><span class="confidence" id="aiConfidence">--</span></div>
+              <div class="ai-draft-body" id="aiDraftBody"></div>
+              <div class="ai-draft-actions">
+                <button class="button ghost tiny" id="dismissAiDraft" type="button">忽略</button>
+                <button class="button secondary tiny" id="regenerateAiDraft" type="button">重新生成</button>
+                <button class="button tiny" id="applyAiDraft" type="button">采用并编辑</button>
+              </div>
+            </section>
+
+            <section class="composer" id="composer" hidden>
+              <div class="composer-tabs">
+                <button class="composer-tab active" type="button" data-mode="reply">回复客户</button>
+                <button class="composer-tab internal" type="button" data-mode="note">内部备注</button>
+              </div>
+              <textarea id="replyContent" aria-label="回复内容" placeholder="输入回复内容；AI 建议需要人工确认后才会发送"></textarea>
+              <div class="composer-foot">
+                <div class="composer-tools">
+                  <button class="icon-button" id="quickReply" type="button" aria-label="快捷回复"></button>
+                  <button class="icon-button" id="attachFile" type="button" aria-label="添加附件"></button>
+                  <button class="button ghost tiny" id="generateAiDraft" type="button">✦ 生成 AI 建议</button>
+                </div>
+                <span class="composer-hint">⌘ + Enter 发送</span>
+                <button class="button small" id="sendReply" type="button">发送回复</button>
+              </div>
+            </section>
+          </section>
+
+          <aside class="context-pane" id="contextPane" aria-label="客户上下文">
+            <div class="context-tabs" role="tablist">
+              <button class="context-tab active" type="button" data-context="customer">客户 360</button>
+              <button class="context-tab" type="button" data-context="order">订单</button>
+              <button class="context-tab" type="button" data-context="ai">AI 依据</button>
+            </div>
+            <div class="context-scroll" id="contextContent">
+              <div class="empty-state compact"><p>选择会话后加载客户上下文</p></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="actionModal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+    <div class="modal" style="width:min(460px,100%)">
+      <div class="modal-head"><h3 id="actionModalTitle">处理会话</h3><button class="icon-button" id="closeActionModal" aria-label="关闭"></button></div>
+      <div class="modal-body"><div class="field"><label id="actionModalLabel" for="actionModalInput">说明</label><textarea id="actionModalInput"></textarea></div></div>
+      <div class="modal-foot"><button class="button secondary" id="cancelActionModal" type="button">取消</button><button class="button" id="confirmActionModal" type="button">确认</button></div>
+    </div>
+  </div>
+  <div id="toastHost" class="toast-container"></div>
+  <script src="./js/shared.js"></script>
+  <script src="./js/reception.js"></script>
+</body>
+</html>

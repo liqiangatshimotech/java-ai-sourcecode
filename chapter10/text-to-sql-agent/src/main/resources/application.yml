@@ -1,0 +1,18 @@
+spring:
+  sql:
+    init:
+      # 演示库由 ReadOnlyDatabaseFactory 初始化；生产运行身份绝不执行建表脚本。
+      mode: never
+
+text2sql:
+  ai:
+    # 模型供应商：deepseek（默认）/ ollama / openai（chatgpt 也可以）
+    provider: ${AI_PROVIDER:deepseek}
+    # 钉死离线规则模型的开关：CI、课堂演示没网没 key 时设为 true
+    offline: ${TEXT2SQL_OFFLINE:false}
+  guard:
+    # SQL 护栏允许的单次最大返回行数：对外最多返回 max-rows 行，内部多取一行判断截断
+    max-rows: 200
+  executor:
+    # 只读执行器的查询超时（秒）
+    timeout-seconds: 5
