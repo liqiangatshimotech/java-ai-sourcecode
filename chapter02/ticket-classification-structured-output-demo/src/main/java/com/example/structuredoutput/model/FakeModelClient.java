@@ -1,5 +1,6 @@
 package com.example.structuredoutput.model;
 
+/** 离线演示：先返回不合法的自然语言，再返回合法 JSON，不访问外部模型。 */
 public class FakeModelClient implements ModelClient {
 
     private int callCount = 0;
@@ -23,6 +24,7 @@ public class FakeModelClient implements ModelClient {
             """;
     }
 
+    /** 测试用调用次数，证明第二次成功来自重试。 */
     public int callCount() {
         return callCount;
     }
