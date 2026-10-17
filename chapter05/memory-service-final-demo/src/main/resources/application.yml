@@ -1,0 +1,9 @@
+server:
+  address: 127.0.0.1
+  port: ${SERVER_PORT:8056}
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+memory:
+  cleanup-ms: 60000

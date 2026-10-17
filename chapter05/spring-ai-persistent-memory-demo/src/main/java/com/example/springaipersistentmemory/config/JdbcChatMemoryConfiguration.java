@@ -1,67 +1,27 @@
 package com.example.springaipersistentmemory.config;
-
+import java.time.Clock;
 import javax.sql.DataSource;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.ChatMemoryRepository;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepositoryDialect;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.ai.chat.memory.*;
+import org.springframework.ai.chat.memory.repository.jdbc.*;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-/**
- * 真实 Spring AI 项目中的 JDBC 会话记忆配置。
- *
- * <p>SpringAiPersistentMemoryDemo.java 为了课堂演示的稳定性使用文件模拟持久化；
- * 这个配置类展示生产项目更常见的接法：用 Spring AI 提供的 JdbcChatMemoryRepository
- * 把会话消息写入数据库表 SPRING_AI_CHAT_MEMORY。</p>
- */
+/** Repository 负责数据库读写，窗口负责裁剪，Advisor 负责对接真实 ChatClient。 */
 @Configuration
 public class JdbcChatMemoryConfiguration {
-
-    /**
-     * 创建 JDBC 版 ChatMemoryRepository。
-     *
-     * <p>JdbcTemplate 负责执行 SQL；DataSource 用来识别数据库类型并选择对应 dialect。
-     * 只要 application.yml 中的数据源和 schema 配置正确，上层 ChatMemory 不需要知道底层是
-     * H2、PostgreSQL 还是 MySQL。</p>
-     */
-    @Bean
-    ChatMemoryRepository chatMemoryRepository(JdbcTemplate jdbcTemplate, DataSource dataSource) {
-        return JdbcChatMemoryRepository.builder()
-                .jdbcTemplate(jdbcTemplate)
-                // 根据 DataSource 自动选择 SQL 方言。不同数据库的 timestamp 引号、分页和类型细节并不完全一样。
-                .dialect(JdbcChatMemoryRepositoryDialect.from(dataSource))
-                .build();
+    // 返回具体类型，让 JDBC 自动配置识别已有 Bean，避免再创建第二份 Repository。
+    @Bean public JdbcChatMemoryRepository chatMemoryRepository(JdbcTemplate jdbc,DataSource dataSource) {
+        return JdbcChatMemoryRepository.builder().jdbcTemplate(jdbc)
+                .dialect(JdbcChatMemoryRepositoryDialect.from(dataSource)).build();
     }
-
-    /**
-     * 创建带窗口裁剪的 ChatMemory。
-     *
-     * <p>JdbcChatMemoryRepository 只负责存取消息；MessageWindowChatMemory 决定每次上下文保留多少条。
-     * maxMessages 不是越大越好，真实项目要结合模型上下文窗口、延迟和成本一起调。</p>
-     */
-    @Bean
-    ChatMemory chatMemory(ChatMemoryRepository chatMemoryRepository) {
-        return MessageWindowChatMemory.builder()
-                .chatMemoryRepository(chatMemoryRepository)
-                .maxMessages(10)
-                .build();
+    @Bean public ChatMemory chatMemory(ChatMemoryRepository repository) {
+        return MessageWindowChatMemory.builder().chatMemoryRepository(repository).maxMessages(10).build();
     }
-
-    /**
-     * 给 ChatClient 挂上 MessageChatMemoryAdvisor。
-     *
-     * <p>Advisor 会在请求前按 conversationId 读取历史消息，并在请求后写入本轮 user/assistant 消息。
-     * 调用方仍然需要在每次请求中传入正确的 conversationId，否则记忆无法隔离。</p>
-     */
-    @Bean
-    ChatClient chatClient(ChatClient.Builder builder, ChatMemory chatMemory) {
-        return builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
+    @Bean public ChatClient chatClient(ChatModel model,ChatMemory memory) {
+        // 没有 ChatClient 自动配置时，显式从 ChatModel 创建 Builder，避免缺少 Builder Bean。
+        return ChatClient.builder(model).defaultAdvisors(MessageChatMemoryAdvisor.builder(memory).build()).build();
     }
+    @Bean public Clock clock() { return Clock.systemUTC(); }
 }

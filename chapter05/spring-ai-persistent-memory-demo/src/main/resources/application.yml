@@ -1,8 +1,9 @@
+server:
+  address: 127.0.0.1
+  port: ${SERVER_PORT:8053}
 spring:
-  application:
-    name: spring-ai-persistent-memory-demo
   datasource:
-    url: ${APP_DATASOURCE_URL:jdbc:h2:mem:spring_ai_memory;MODE=PostgreSQL;DB_CLOSE_DELAY=-1}
+    url: ${APP_DATASOURCE_URL:jdbc:h2:file:./data/spring-ai-memory;MODE=PostgreSQL}
     username: ${APP_DATASOURCE_USERNAME:sa}
     password: ${APP_DATASOURCE_PASSWORD:}
     driver-class-name: ${APP_DATASOURCE_DRIVER:org.h2.Driver}
@@ -14,21 +15,6 @@ spring:
             initialize-schema: ${SPRING_AI_CHAT_MEMORY_INITIALIZE_SCHEMA:always}
             schema: ${SPRING_AI_CHAT_MEMORY_SCHEMA:classpath:db/spring-ai-chat-memory-h2.sql}
             platform: ${SPRING_AI_CHAT_MEMORY_PLATFORM:h2}
-
-app:
-  ai:
-    default-provider: ${APP_AI_DEFAULT_PROVIDER:deepseek}
-
-    deepseek:
-      api-key: ${DEEPSEEK_API_KEY:}
-      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
-      model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
-
-    ollama:
-      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-      model: ${OLLAMA_MODEL:qwen3.5:9b}
-
-    chatgpt:
-      api-key: ${CHATGPT_API_KEY:${OPENAI_API_KEY:}}
-      base-url: ${CHATGPT_BASE_URL:https://api.openai.com}
-      model: ${CHATGPT_MODEL:gpt-4o-mini}
+memory:
+  vector:
+    enabled: ${MEMORY_VECTOR_ENABLED:false}
