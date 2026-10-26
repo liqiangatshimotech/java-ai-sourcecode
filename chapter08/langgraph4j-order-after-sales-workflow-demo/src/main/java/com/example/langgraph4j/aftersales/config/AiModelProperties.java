@@ -12,7 +12,7 @@ public class AiModelProperties {
     private String provider = "deepseek";
     private String apiKey = "";
     private String baseUrl = "https://api.deepseek.com";
-    private String model = "deepseek-v4-flash";
+    private String model = "deepseek-flash";
     private double temperature = 0.0;
 
     public boolean isEnabled() { return enabled; }

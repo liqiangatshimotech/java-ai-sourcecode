@@ -224,4 +224,16 @@ class AfterSalesWorkflowServiceTest {
             AfterSalesWorkflowService service,
             IdempotentRefundExecutionService refundService) {
     }
+
+    @Test void duplicateThreadCannotOverwritePendingOrder() throws Exception {
+        TestFixture fixture=fixture(3,new RuleBasedAfterSalesAssistant());
+        fixture.service.start("duplicate","订单 ORD-1001 退款");
+        assertThrows(IllegalStateException.class,() -> fixture.service.start("duplicate","订单 ORD-1002 退款"));
+        assertEquals("ORD-1001",fixture.service.state("duplicate").orderId());
+        assertEquals(WorkflowStatus.WAITING_FOR_APPROVAL,fixture.service.state("duplicate").status());
+    }
+    @Test void emptyOrderAlwaysCountsAsMissingInformation() {
+        var result=new IntentAnalysis(AfterSalesIntent.REFUND,"",List.of());
+        assertTrue(result.missingFields().contains("orderId"));
+    }
 }

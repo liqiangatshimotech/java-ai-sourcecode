@@ -21,8 +21,15 @@ public final class MinimalAgentLoopDemo {
 
     /** 模型每次只能返回“调用工具”或“结束”两类动作。 */
     public sealed interface ModelAction permits CallTool, Finish {}
-    public record CallTool(String toolName, String argument) implements ModelAction {}
-    public record Finish(String answer) implements ModelAction {}
+    public record CallTool(String toolName, String argument) implements ModelAction {
+        public CallTool {
+            if (toolName == null || toolName.isBlank() || argument == null || argument.isBlank())
+                throw new IllegalArgumentException("工具名和参数不能为空");
+        }
+    }
+    public record Finish(String answer) implements ModelAction {
+        public Finish { if (answer == null || answer.isBlank()) throw new IllegalArgumentException("最终答案不能为空"); }
+    }
     public record RunResult(String answer, List<String> trace, int steps) {}
 
     public interface DecisionModel {
@@ -53,7 +60,7 @@ public final class MinimalAgentLoopDemo {
         public RunResult run(String goal) {
             List<String> trace = new ArrayList<>();
             for (int step = 1; step <= maxSteps; step++) {
-                ModelAction action = model.next(goal, List.copyOf(trace));
+                ModelAction action = java.util.Objects.requireNonNull(model.next(goal, List.copyOf(trace)), "模型返回了空动作");
                 trace.add("第 " + step + " 步决策：" + action);
                 if (action instanceof Finish finish) {
                     return new RunResult(finish.answer(), List.copyOf(trace), step);
@@ -70,9 +77,19 @@ public final class MinimalAgentLoopDemo {
     /** 模拟真实模型连续两次调用工具、第三次给出答案。 */
     public static final class ScriptedModel implements DecisionModel {
         @Override public ModelAction next(String goal, List<String> trace) {
-            if (trace.isEmpty()) return new CallTool("query_order", "A100");
-            if (trace.size() == 2) return new CallTool("calculate_refund", "299");
-            return new Finish("订单 A100 可退款 299 元");
+            var matcher = java.util.regex.Pattern.compile("\\bA[0-9]+\\b").matcher(goal);
+            if (!matcher.find()) throw new IllegalArgumentException("请提供订单号");
+            String orderId = matcher.group();
+            if (trace.isEmpty()) return new CallTool("query_order", orderId);
+            if (trace.size() == 2) {
+                // 真正读取上一轮观察的金额，不用硬编码 299 代替工具返回值。
+                String observation = trace.getLast();
+                if (!observation.contains("amount=")) throw new IllegalStateException("未查到订单金额，停止退款计算");
+                return new CallTool("calculate_refund", observation.substring(observation.indexOf("amount=") + 7));
+            }
+            String refund = trace.getLast();
+            if (!refund.contains("refund=")) throw new IllegalStateException("缺少退款计算结果");
+            return new Finish("订单 " + orderId + " 可退款 " + refund.substring(refund.indexOf("refund=") + 7) + " 元");
         }
     }
 
@@ -84,7 +101,7 @@ public final class MinimalAgentLoopDemo {
         public static ModelSettings fromEnvironment(Map<String, String> env) {
             String provider = env.getOrDefault("AI_PROVIDER", "deepseek").toLowerCase(Locale.ROOT);
             return switch (provider) {
-                case "deepseek" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "https://api.deepseek.com"), env.getOrDefault("AI_MODEL", "deepseek-v4-flash"), env.getOrDefault("DEEPSEEK_API_KEY", ""));
+                case "deepseek" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "https://api.deepseek.com"), env.getOrDefault("AI_MODEL", "deepseek-flash"), env.getOrDefault("DEEPSEEK_API_KEY", ""));
                 case "ollama" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "http://localhost:11434/v1"), env.getOrDefault("AI_MODEL", "deepseek-r1:7b"), "not-required");
                 case "openai", "chatgpt" -> new ModelSettings("openai", env.getOrDefault("AI_BASE_URL", "https://api.openai.com/v1"), env.getOrDefault("AI_MODEL", "gpt-4.1-mini"), env.getOrDefault("OPENAI_API_KEY", ""));
                 default -> throw new IllegalArgumentException("不支持的 AI_PROVIDER：" + provider);

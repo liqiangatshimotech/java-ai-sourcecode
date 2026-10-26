@@ -47,6 +47,9 @@ public class AfterSalesWorkflowService {
         String threadId = normalizeThreadId(requestedThreadId);
         return locked(threadId, () -> {
             RunnableConfig config = runnableConfig(threadId);
+            if (workflow.graph().stateOf(config).isPresent()) {
+                throw new IllegalStateException("threadId 已存在，请查询状态或使用 information/approval 恢复接口");
+            }
             Map<String, Object> input = Map.of(
                     AfterSalesState.THREAD_ID, threadId,
                     AfterSalesState.USER_MESSAGE, requireText(message, "message"),

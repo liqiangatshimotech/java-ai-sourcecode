@@ -6,8 +6,11 @@ import java.util.List;
 public record IntentAnalysis(AfterSalesIntent intent, String orderId, List<String> missingFields) {
     public IntentAnalysis {
         intent = intent == null ? AfterSalesIntent.UNKNOWN : intent;
-        orderId = orderId == null ? "" : orderId.trim().toUpperCase();
-        missingFields = missingFields == null ? List.of() : List.copyOf(missingFields);
+        orderId = orderId == null ? "" : orderId.trim().toUpperCase(java.util.Locale.ROOT);
+        java.util.ArrayList<String> normalized = new java.util.ArrayList<>(missingFields == null ? List.of() : missingFields);
+        // 模型可能漏报 missingFields，不能因此绕过追问直接查询空订单号。
+        if (orderId.isBlank() && !normalized.contains("orderId")) normalized.add("orderId");
+        missingFields = List.copyOf(normalized);
     }
 
     public boolean needsMoreInformation() {

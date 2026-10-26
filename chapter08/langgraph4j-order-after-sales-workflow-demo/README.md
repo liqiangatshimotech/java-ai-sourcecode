@@ -35,7 +35,7 @@ START
 在 `java-ai-course-examples` 目录下执行：
 
 ```bash
-# 16 个离线测试，不会访问任何模型 API
+# 离线测试，不会访问任何模型 API
 mvn -f chapter08/langgraph4j-order-after-sales-workflow-demo/pom.xml test
 
 # 启动离线演示，默认端口 8080
@@ -100,7 +100,7 @@ curl -N -X POST http://localhost:8080/api/after-sales/workflows/stream \
 
 | 供应商 | 启动 profile | 密钥 | 默认模型 | 默认地址 |
 | --- | --- | --- | --- | --- |
-| DeepSeek（默认） | `deepseek` | `DEEPSEEK_API_KEY` | `deepseek-v4-flash` | `https://api.deepseek.com` |
+| DeepSeek（默认） | `deepseek` | `DEEPSEEK_API_KEY` | `deepseek-flash` | `https://api.deepseek.com` |
 | Ollama | `ollama` | 无 | `qwen2.5:7b` | `http://localhost:11434` |
 | ChatGPT / OpenAI | `openai` | `OPENAI_API_KEY` | `gpt-4.1-mini` | `https://api.openai.com/v1` |
 
@@ -211,3 +211,5 @@ com.example.langgraph4j.aftersales
 - 幂等退款
 - Fake `ChatModel` 验证 Spring AI 适配层，不依赖真实 API
 - checkpoint 历史和 Mermaid 导出
+
+同一个 threadId 只能 start 一次，重复启动返回冲突；补充信息和审批使用专用恢复接口，避免把新订单混入旧 checkpoint。IntentAnalysis 会补齐缺失 orderId 标记，即使模型漏报 missingFields，也会进入追问。当前回归覆盖 MemorySaver；本次环境没有可运行的 MySQL，未完成 MySQL 跨进程恢复实测。

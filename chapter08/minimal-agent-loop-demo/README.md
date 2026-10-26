@@ -8,3 +8,5 @@ mvn -f chapter08/minimal-agent-loop-demo/pom.xml exec:java
 ```
 
 默认模型配置为 DeepSeek；环境变量与 8.1 相同，支持 `AI_PROVIDER=ollama` 和 `AI_PROVIDER=openai`。离线演示用脚本模型模拟结构化工具调用，不读取真实密钥。
+
+ScriptedModel 仍是离线规则决策器，但会读取工具返回的 amount 与 refund；替换订单金额后最终答案随观察变化。未知或缺失订单安全停止。

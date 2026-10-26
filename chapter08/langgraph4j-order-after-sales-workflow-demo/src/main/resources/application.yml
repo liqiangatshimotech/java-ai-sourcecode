@@ -12,7 +12,7 @@ aftersales:
     provider: ${AI_PROVIDER:deepseek}
     api-key: ${DEEPSEEK_API_KEY:}
     base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
-    model: ${DEEPSEEK_MODEL:deepseek-v4-flash}
+    model: ${DEEPSEEK_MODEL:deepseek-flash}
     temperature: ${AI_TEMPERATURE:0.0}
   checkpoint:
     type: ${CHECKPOINT_TYPE:memory}

@@ -8,3 +8,5 @@ mvn -f chapter08/agent-concepts-demo/pom.xml exec:java
 ```
 
 真实模型配置统一使用环境变量，默认提供方是 DeepSeek：`AI_PROVIDER=deepseek`、`DEEPSEEK_API_KEY`；切换 Ollama 使用 `AI_PROVIDER=ollama`，切换 ChatGPT 使用 `AI_PROVIDER=openai` 和 `OPENAI_API_KEY`。演示入口只打印配置，不发送请求，也不会把密钥写入日志。
+
+未知订单不会替换成 A100；缺少订单号直接提示补充。ModelSettings 的 toString 会隐藏密钥。

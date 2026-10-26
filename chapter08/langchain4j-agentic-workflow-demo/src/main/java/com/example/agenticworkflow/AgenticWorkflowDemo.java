@@ -380,7 +380,7 @@ public final class AgenticWorkflowDemo {
                 case "deepseek" -> new ModelSettings(
                         provider,
                         env.getOrDefault("AI_BASE_URL", "https://api.deepseek.com"),
-                        env.getOrDefault("AI_MODEL", "deepseek-v4-flash"),
+                        env.getOrDefault("AI_MODEL", "deepseek-flash"),
                         env.getOrDefault("DEEPSEEK_API_KEY", "")
                 );
                 case "ollama" -> new ModelSettings(

@@ -77,7 +77,10 @@ public final class AgentConceptsDemo {
     /** 离线模型稳定地产生工具调用，让测试不依赖网络或 API Key。 */
     public static final class RuleBasedModel implements ReasoningModel {
         @Override public Decision decide(String goal, List<String> memory) {
-            String orderId = goal.contains("A200") ? "A200" : "A100";
+            // 不把缺失或未知订单静默替换成 A100，防止处理错单。
+            var matcher = java.util.regex.Pattern.compile("\\bA[0-9]+\\b").matcher(goal);
+            if (!matcher.find()) throw new IllegalArgumentException("请提供订单号");
+            String orderId = matcher.group();
             return new Decision("query_order", orderId);
         }
     }
@@ -94,10 +97,11 @@ public final class AgentConceptsDemo {
 
     /** DeepSeek、Ollama、ChatGPT 的连接信息只从环境变量读取。 */
     public record ModelSettings(String provider, String baseUrl, String model, String apiKey) {
+        @Override public String toString() { return "ModelSettings[provider=" + provider + ", model=" + model + ", apiKey=***]"; }
         public static ModelSettings fromEnvironment(Map<String, String> env) {
             String provider = env.getOrDefault("AI_PROVIDER", "deepseek").toLowerCase(Locale.ROOT);
             return switch (provider) {
-                case "deepseek" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "https://api.deepseek.com"), env.getOrDefault("AI_MODEL", "deepseek-v4-flash"), env.getOrDefault("DEEPSEEK_API_KEY", ""));
+                case "deepseek" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "https://api.deepseek.com"), env.getOrDefault("AI_MODEL", "deepseek-flash"), env.getOrDefault("DEEPSEEK_API_KEY", ""));
                 case "ollama" -> new ModelSettings(provider, env.getOrDefault("AI_BASE_URL", "http://localhost:11434/v1"), env.getOrDefault("AI_MODEL", "deepseek-r1:7b"), "not-required");
                 case "openai", "chatgpt" -> new ModelSettings("openai", env.getOrDefault("AI_BASE_URL", "https://api.openai.com/v1"), env.getOrDefault("AI_MODEL", "gpt-4.1-mini"), env.getOrDefault("OPENAI_API_KEY", ""));
                 default -> throw new IllegalArgumentException("不支持的 AI_PROVIDER：" + provider);
