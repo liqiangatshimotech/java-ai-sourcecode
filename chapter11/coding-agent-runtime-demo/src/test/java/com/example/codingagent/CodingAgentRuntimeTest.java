@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -61,5 +62,16 @@ class CodingAgentRuntimeTest {
         assertTrue(report.diff().contains("0.20"));
         assertTrue(report.diff().contains("0.30"));
         assertNotNull(report.session().approvalDecision());
+        // 执行轨迹要和文档一致：先定位、再写入、测试、出 diff
+        assertEquals(java.util.List.of("list_files", "search_code", "read_file", "write_file", "run_tests", "git_diff"),
+                report.session().steps().stream().map(com.example.codingagent.domain.AgentStep::toolName).toList());
+    }
+
+    // Windows 上 Path.toString() 用反斜杠，快照 key 必须统一成 "/" 才能匹配 TARGET_PATH
+    @Test
+    void shouldUseForwardSlashWorkspacePaths() {
+        Path relative = Path.of("src", "main", "java", "com", "acme", "billing", "PriceCalculator.java");
+        assertEquals(CodingAgentRuntime.TARGET_PATH,
+                com.example.codingagent.workspace.WorkspaceSnapshot.toWorkspacePath(relative));
     }
 }

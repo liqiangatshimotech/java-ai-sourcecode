@@ -29,7 +29,8 @@ public final class ListFilesTool implements AgentTool {
             String output = stream
                     .filter(Files::isRegularFile)
                     .map(context.workspaceRoot()::relativize)
-                    .map(Path::toString)
+                    // 统一成 "/" 分隔，Windows 和 Linux 输出一致，后续工具可以直接拿来当 path 参数
+                    .map(com.example.codingagent.workspace.WorkspaceSnapshot::toWorkspacePath)
                     .filter(path -> !path.contains(".git"))
                     .sorted(Comparator.naturalOrder())
                     .collect(Collectors.joining(System.lineSeparator()));

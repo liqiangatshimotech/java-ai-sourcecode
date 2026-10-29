@@ -23,7 +23,7 @@ class JobApprovalTest {
             public String name(){return "run_tests";} public ToolRisk risk(){return ToolRisk.MEDIUM;}
             public ToolResult execute(ToolContext c,Map<String,String>a){testCalls.incrementAndGet();return pass?ToolResult.success("TESTS_PASSED","test double"):ToolResult.failure("TESTS_FAILED","test double: expected 70.00");}
         };
-        var registry=new ToolRegistry().register(new WriteFileTool()).register(tests).register(new GitDiffTool());
+        var registry=new ToolRegistry().register(new ListFilesTool()).register(new SearchCodeTool()).register(new ReadFileTool()).register(new WriteFileTool()).register(tests).register(new GitDiffTool());
         return new CodingAgentJobService(temp,model,registry,ModelSettings.from(Map.of("AI_PROVIDER","deepseek")));
     }
     private CodingAgentJob create(CodingAgentJobService service)throws Exception{return service.createJob("billing","feature","把会员折扣上限从 20% 调整为 30%","test");}

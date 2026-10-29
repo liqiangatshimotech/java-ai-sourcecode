@@ -44,7 +44,15 @@ public final class CodingAgentRuntime {
         this.auditLogger = auditLogger;
     }
 
+    /**
+     * 本次任务唯一允许修改的业务文件，路径相对于演示工作区根目录，统一用 "/" 分隔。
+     * 注意：PriceCalculator 不在本项目 src 里，它是 DemoWorkspaceFactory 在运行时生成到
+     * target/coding-agent-workspace（命令行）或 target/coding-agent-enterprise-workspaces/coding-agent-task-<taskId>（管理台）下的演示业务仓库代码。
+     */
     public static final String TARGET_PATH = "src/main/java/com/acme/billing/PriceCalculator.java";
+
+    /** 定位目标代码时搜索的关键字：折扣上限常量。 */
+    private static final String SEARCH_KEYWORD = "MAX_DISCOUNT";
 
     /** 创建阶段只生成可审阅提案，源码保持不变。固定场景不允许模型挑选另一个文件。 */
     public com.example.codingagent.domain.PreparedChange prepare(CodingTask task, Path root) throws IOException {
@@ -102,9 +110,24 @@ public final class CodingAgentRuntime {
         ToolContext context = new ToolContext(normalizedRoot, new WorkspaceBoundary(normalizedRoot), actual);
         auditLogger.log(session, "approved_proposal", prepared.proposalId() + " source=" + prepared.sourceVersion());
         CodeChangeProposal proposal = prepared.proposal();
+
+        // 1. 先像人一样熟悉仓库：列文件 -> 搜关键字 -> 读目标文件，这三步都是只读的低风险工具
+        ToolResult files = execute(session, context, "浏览工作区文件", "list_files", Map.of());
+        if (!files.success()) throw new IllegalStateException("列出工作区文件失败");
+        ToolResult search = execute(session, context, "搜索折扣上限常量", "search_code", Map.of("query", SEARCH_KEYWORD));
+        String hitPath = firstSearchHitPath(search.success() ? search.output() : "");
+        if (!TARGET_PATH.equals(hitPath)) {
+            // 搜索定位到的文件必须就是审批过的那个文件，否则说明仓库结构和提案对不上
+            throw new IllegalStateException("搜索命中的文件与已审批文件不一致：" + hitPath);
+        }
+        ToolResult read = execute(session, context, "读取待修改源码", "read_file", Map.of("path", TARGET_PATH));
+        if (!read.success()) throw new IllegalStateException("读取目标源码失败");
+
+        // 2. 写入审批通过的具体代码；写入是高风险工具，execute 里会再次检查审批
         ToolResult write = execute(session, context, "写入已审批的具体代码", "write_file",
                 Map.of("path", proposal.targetPath(), "content", proposal.newContent()));
         if (!write.success()) throw new IllegalStateException("授权写入失败");
+        // 3. 在受限容器中跑回归测试，再生成交付 diff
         ToolResult testResult = execute(session, context, "容器中执行回归测试", "run_tests", Map.of());
         ToolResult diffResult = execute(session, context, "生成交付 diff", "git_diff", Map.of());
         auditLogger.log(session, "session_finished", "testsPassed=" + testResult.success());

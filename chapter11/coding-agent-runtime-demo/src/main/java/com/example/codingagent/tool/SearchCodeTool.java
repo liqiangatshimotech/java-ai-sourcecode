@@ -1,5 +1,7 @@
 package com.example.codingagent.tool;
 
+import com.example.codingagent.workspace.WorkspaceSnapshot;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,7 +35,7 @@ public final class SearchCodeTool implements AgentTool {
             String output = stream
                     .filter(Files::isRegularFile)
                     .filter(this::isSearchable)
-                    .map(path -> context.boundary().resolve(context.workspaceRoot().relativize(path).toString()))
+                    .map(path -> context.boundary().resolve(WorkspaceSnapshot.toWorkspacePath(context.workspaceRoot().relativize(path))))
                     .flatMap(path -> searchFile(context.workspaceRoot(), path, query).stream())
                     .collect(Collectors.joining(System.lineSeparator()));
             if (output.isBlank()) {
@@ -49,7 +51,8 @@ public final class SearchCodeTool implements AgentTool {
             java.util.List<String> hits = new java.util.ArrayList<>();
             for (int i = 0; i < lines.size(); i++) {
                 if (lines.get(i).contains(query)) {
-                    hits.add(root.relativize(path) + ":" + (i + 1) + ":" + lines.get(i).trim());
+                    // 命中行格式：相对路径:行号:内容，路径统一用 "/"，Runtime 会用它和 TARGET_PATH 比对
+                    hits.add(WorkspaceSnapshot.toWorkspacePath(root.relativize(path)) + ":" + (i + 1) + ":" + lines.get(i).trim());
                 }
             }
             return hits;
