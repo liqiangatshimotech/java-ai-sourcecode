@@ -1,5 +1,20 @@
 # langchain4j-agentic-workflow-demo
 
+## 8.4 文章与源码位置
+
+打开 [OfficialAgenticWorkflowDemo.java](src/main/java/com/example/agenticworkflow/OfficialAgenticWorkflowDemo.java)。8.4.1 截图中的 `ReplyAgent.reply`、`@UserMessage` 和 `@Agent` 都在这个文件里。
+
+| 文章内容 | 源码位置 |
+| --- | --- |
+| 8.4.1 完整提示词与四个输入变量 | `OfficialAgenticWorkflowDemo.ReplyAgent.reply` |
+| 8.4.2 顺序、并行、循环 | `OfficialAgenticWorkflowDemo.run` |
+| 8.4.3 共享状态与调用记录 | `OfficialAgenticWorkflowDemo.run` / `main`，使用官方 `AgenticScope` |
+| 8.4.4 确定性检查、运行入口 | `OfficialAgenticWorkflowDemo.Review` / `main` |
+
+`@UserMessage` 定义回复提示词；`@V` 把 Scope 中的 `order`、`logistics`、`message`、`feedback` 绑定进模板。`run` 通过 `AgenticServices.agentBuilder(ReplyAgent.class)` 创建代理，模型每轮收到替换变量后的消息。首次反馈来自初始 Map，下一轮来自 `Review`。offline 和 live 共用提示词与编排，只有 ChatModel 不同。
+
+[AgenticWorkflowDemo.java](src/main/java/com/example/agenticworkflow/AgenticWorkflowDemo.java) 是额外的纯 Java 对照。它的回复契约命名为 `PlainJavaReplyAgent.compose`，实现 `TemplateReplyAgent` 直接拼接文本；本地状态容器命名为 `PlainJavaScope`。这里没有模型代理，添加 `@UserMessage` 不会自动触发模型调用。阅读正文、修改提示词或运行 live 时，使用上面的官方入口。
+
 默认入口 `OfficialAgenticWorkflowDemo` 使用 `langchain4j-agentic:1.20.0-beta30` 与 LangChain4j 1.20.0。官方 `@Agent` / `@V` 绑定变量；`parallelBuilder` 查订单和物流，`sequenceBuilder` 等待事实，`loopBuilder` 生成与检查回复。Scope 与调用记录由框架生成。
 
 先设置 `DEEPSEEK_API_KEY`，再运行 `APP_AI_MODE=live AI_PROVIDER=deepseek mvn -q -f chapter08/langchain4j-agentic-workflow-demo/pom.xml compile exec:java`。

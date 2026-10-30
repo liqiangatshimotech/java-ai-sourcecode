@@ -29,7 +29,7 @@ class AgenticWorkflowDemoTest {
             assertTrue(result.reply().contains("人工确认"));
             assertEquals("SUCCEEDED", result.invocations().getFirst().status());
             assertEquals(2, result.invocations().stream()
-                    .filter(invocation -> invocation.agentName().equals("ReplyAgent"))
+                    .filter(invocation -> invocation.agentName().equals("PlainJavaReplyAgent"))
                     .count());
             assertTrue(result.scope().containsKey("fact.orderStatus"));
             assertTrue(result.scope().containsKey("fact.logisticsStatus"));

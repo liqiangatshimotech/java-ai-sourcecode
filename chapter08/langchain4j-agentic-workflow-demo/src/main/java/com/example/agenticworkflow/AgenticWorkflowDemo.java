@@ -16,6 +16,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
+ * 纯 Java 对照入口：8.4 正文对应 {@link OfficialAgenticWorkflowDemo}。
+ * 提示词在 {@link OfficialAgenticWorkflowDemo.ReplyAgent#reply(String, String, String, String)} 上；
+ * 本文件使用模板拼接，不经过 AI Services 代理，因此给这里的接口加提示词注解不会生效。
+ *
  * 用订单售后业务演示 Agentic Workflow 的三种基本编排：
  * 1. 顺序：意图识别完成后，才进入事实查询和补偿判断；
  * 2. 并行：订单状态与物流状态只依赖 orderId，可以同时查询；
@@ -85,7 +89,7 @@ public final class AgenticWorkflowDemo {
      * putOnce 用于事实和决策，禁止两个并行分支覆盖同一个 key；
      * replace 用于循环里的当前回复和质量控制变量。
      */
-    public static final class AgenticScope {
+    public static final class PlainJavaScope {
         private final Map<String, Object> values = new LinkedHashMap<>();
         private final List<AgentInvocation> invocations = new ArrayList<>();
 
@@ -137,11 +141,12 @@ public final class AgenticWorkflowDemo {
         CompensationDecision decide(String orderStatus, String logisticsStatus);
     }
 
-    public interface ReplyAgent {
+    /** 纯 Java 模板契约；实现见 TemplateReplyAgent。模型提示词见官方入口的 ReplyAgent。 */
+    public interface PlainJavaReplyAgent {
         String compose(Request request, CompensationDecision decision, String instruction);
     }
 
-    public interface ReplyQualityAgent {
+    public interface PlainJavaReplyQualityAgent {
         QualityResult review(String reply);
     }
 
@@ -151,8 +156,8 @@ public final class AgenticWorkflowDemo {
         private final OrderAgent orderAgent;
         private final LogisticsAgent logisticsAgent;
         private final CompensationAgent compensationAgent;
-        private final ReplyAgent replyAgent;
-        private final ReplyQualityAgent qualityAgent;
+        private final PlainJavaReplyAgent replyAgent;
+        private final PlainJavaReplyQualityAgent qualityAgent;
         private final Executor parallelExecutor;
         private final int maxReplyIterations;
 
@@ -161,8 +166,8 @@ public final class AgenticWorkflowDemo {
                 OrderAgent orderAgent,
                 LogisticsAgent logisticsAgent,
                 CompensationAgent compensationAgent,
-                ReplyAgent replyAgent,
-                ReplyQualityAgent qualityAgent,
+                PlainJavaReplyAgent replyAgent,
+                PlainJavaReplyQualityAgent qualityAgent,
                 Executor parallelExecutor,
                 int maxReplyIterations
         ) {
@@ -180,7 +185,7 @@ public final class AgenticWorkflowDemo {
         }
 
         public WorkflowResult run(Request request) {
-            AgenticScope scope = new AgenticScope();
+            PlainJavaScope scope = new PlainJavaScope();
             scope.putOnce("input.request", request);
 
             Intent intent = invoke(
@@ -226,7 +231,7 @@ public final class AgenticWorkflowDemo {
                 String currentInstruction = instruction;
                 reply = invoke(
                         scope,
-                        "ReplyAgent",
+                        "PlainJavaReplyAgent",
                         List.of("input.request", "decision.compensation", "control.replyInstruction"),
                         "output.customerReply",
                         iteration,
@@ -237,7 +242,7 @@ public final class AgenticWorkflowDemo {
                 String reviewedReply = reply;
                 QualityResult quality = invoke(
                         scope,
-                        "ReplyQualityAgent",
+                        "PlainJavaReplyQualityAgent",
                         List.of("output.customerReply"),
                         "metric.replyQuality",
                         iteration,
@@ -253,12 +258,12 @@ public final class AgenticWorkflowDemo {
             return result(scope, reply);
         }
 
-        private WorkflowResult result(AgenticScope scope, String reply) {
+        private WorkflowResult result(PlainJavaScope scope, String reply) {
             return new WorkflowResult(reply, scope.snapshot(), scope.invocationSnapshot());
         }
 
         private <T> T invoke(
-                AgenticScope scope,
+                PlainJavaScope scope,
                 String agentName,
                 List<String> inputKeys,
                 String outputKey,
@@ -351,7 +356,7 @@ public final class AgenticWorkflowDemo {
         }
     }
 
-    public static final class TemplateReplyAgent implements ReplyAgent {
+    public static final class TemplateReplyAgent implements PlainJavaReplyAgent {
         @Override
         public String compose(Request request, CompensationDecision decision, String instruction) {
             String base = decision.eligible()
@@ -362,7 +367,7 @@ public final class AgenticWorkflowDemo {
         }
     }
 
-    public static final class RuleReplyQualityAgent implements ReplyQualityAgent {
+    public static final class RuleReplyQualityAgent implements PlainJavaReplyQualityAgent {
         @Override
         public QualityResult review(String reply) {
             boolean passed = reply.contains("人工确认");

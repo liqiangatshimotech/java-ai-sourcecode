@@ -15,15 +15,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** 官方 langchain4j-agentic：并行查事实，顺序交接，循环生成与检查。 */
+/**
+ * 8.4～8.4.4 正文对应的默认入口：并行查事实，顺序交接，循环生成与检查。
+ * 8.4.1 的完整提示词在下方 ReplyAgent.reply 上，offline/live 共用这份定义。
+ * offline 只替换 ChatModel 的返回值；提示词仍由官方 AI Services 解析和发送。
+ */
 public final class OfficialAgenticWorkflowDemo {
+    /**
+     * 回复生成是本流程唯一需要模型的步骤，文章 8.4.1 直接引用此接口。
+     * OrderLookup/LogisticsLookup 查询事实，Review 按规则检查，它们都是 Java 实现。
+     */
     public interface ReplyAgent {
+        // @UserMessage 是模型收到的模板；{{变量}} 与下方 @V 的名字一一对应。
+        // @Agent 的 description 描述能力，outputKey 指定结果写入 Scope 的 reply 键。
         @UserMessage("""
                 你是订单售后助手。订单={{order}}；物流={{logistics}}。
                 用户问题={{message}}；本轮改进意见={{feedback}}。
                 用中文给出回复，明确写出订单编号和“人工确认”。只提出补偿建议，不宣称已发放。
                 """)
         @Agent(outputKey = "reply", description = "依据订单与物流事实生成售后答复")
+        // order/logistics 来自并行查询，message 来自请求，feedback 来自初始输入或上一轮 Review。
         String reply(@V("order") String order, @V("logistics") String logistics,
                      @V("message") String message, @V("feedback") String feedback);
     }
@@ -59,6 +70,7 @@ public final class OfficialAgenticWorkflowDemo {
             UntypedAgent facts = AgenticServices.parallelBuilder()
                     .subAgents(new OrderLookup(), new LogisticsLookup()).executor(executor)
                     .outputKey("factsReady").output(scope -> "READY").build();
+            // 必须经 agentBuilder 创建代理，@UserMessage 才会被解析并传给 ChatModel。
             ReplyAgent writer = AgenticServices.agentBuilder(ReplyAgent.class).chatModel(model).build();
             UntypedAgent revision = AgenticServices.loopBuilder().subAgents(writer, new Review())
                     .maxIterations(maxIterations).testExitAtLoopEnd(true)
