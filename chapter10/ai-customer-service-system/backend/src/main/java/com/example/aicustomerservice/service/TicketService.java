@@ -38,16 +38,23 @@ public class TicketService {
 
     public SupportTicket createOrReuse(
         String customerId,
-        CustomerTier tier,
+        CustomerTier customerTier,
         String sessionId,
         String question,
         String answerDraft,
         IntentType intent
     ) {
+        // Clock 由 Spring 注入，测试时可以换成固定时间，避免时间断言抖动。
         Instant now = clock.instant();
+
+        // 先转小写、去掉空白和常见标点，再对问题生成摘要。
+        // 同一客户“这个订单能退款吗？”和“这个订单能退款吗”会得到同一个键。
         String idempotencyKey = idempotencyKey(customerId, question);
+
         return ticketDao.findByIdempotencyKey(idempotencyKey)
+            // 已存在时不再创建新工单，而是增加重复次数并写入时间线。
             .map(existing -> ticketDao.save(existing.markDuplicate(now)))
+            // 没有命中时才生成新工单号，客户等级和意图共同决定优先级。
             .orElseGet(() -> ticketDao.save(SupportTicket.create(
                 ticketIdGenerator.nextTicketId(),
                 customerId,
@@ -55,7 +62,7 @@ public class TicketService {
                 question,
                 answerDraft,
                 intent.name(),
-                priorityFor(tier, intent),
+                priorityFor(customerTier, intent),
                 idempotencyKey,
                 now
             )));
@@ -116,6 +123,11 @@ public class TicketService {
 
     public SupportTicket addNote(String ticketId, String operator, String message) {
         SupportTicket ticket = get(ticketId);
+        // 已解决工单只读：和分配、关闭保持同一条规则，避免结论写完后时间线还在被追加。
+        // 需要继续处理时，由重复问题命中幂等键重新打开原工单。
+        if (ticket.status() == TicketStatus.RESOLVED) {
+            throw new BusinessException("TICKET_ALREADY_RESOLVED", "已关闭工单不能再添加备注：" + ticketId);
+        }
         return ticketDao.save(ticket.addNote(operator.trim(), message.trim(), clock.instant()));
     }
 

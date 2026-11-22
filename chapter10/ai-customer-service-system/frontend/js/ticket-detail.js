@@ -3,7 +3,7 @@
 const TICKET_OPERATOR = "support-linxiao";
 
 function timelineTypeLabel(type) {
-  return ({ CREATED: "工单创建", ASSIGNED: "负责人变更", NOTE_ADDED: "添加备注", RESOLVED: "工单解决", DUPLICATE_HIT: "重复问题命中" })[type] || type;
+  return ({ CREATED: "工单创建", ASSIGNED: "负责人变更", NOTE_ADDED: "添加备注", RESOLVED: "工单解决", DUPLICATE_HIT: "重复问题命中", REOPENED_BY_DUPLICATE: "重复问题命中后重新打开" })[type] || type;
 }
 
 function renderTicketDetail(ticket) {
@@ -49,7 +49,7 @@ function renderTicketDetail(ticket) {
         </section>
         <section class="surface">
           <div class="surface-head"><div><h2>内部备注</h2><p>记录只对内部协作人员可见。</p></div></div>
-          <div class="surface-body"><div class="field"><label for="ticketNote">处理进展</label><textarea id="ticketNote" placeholder="例如：已联系仓库，等待拦截结果"></textarea></div><button class="button secondary" id="addTicketNote" style="width:100%;margin-top:10px">添加备注</button></div>
+          <div class="surface-body"><div class="field"><label for="ticketNote">处理进展</label><textarea id="ticketNote" placeholder="例如：已联系仓库，等待拦截结果"></textarea></div><button class="button secondary" id="addTicketNote" style="width:100%;margin-top:10px" ${ticket.actionable ? "" : "disabled"}>添加备注</button></div>
         </section>
         <section class="surface">
           <div class="surface-head"><div><h2>解决工单</h2><p>填写可复盘的解决结论后关闭。</p></div></div>

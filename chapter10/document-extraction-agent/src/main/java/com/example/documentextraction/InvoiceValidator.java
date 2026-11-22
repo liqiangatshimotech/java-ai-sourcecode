@@ -21,8 +21,11 @@ public final class InvoiceValidator {
             if(date.isAfter(LocalDate.now(clock))||date.isBefore(LocalDate.of(2000,1,1)))add(issues,"issueDate","DATE_RANGE","日期不在2000年至今天的范围内");
         }catch(Exception e){add(issues,"issueDate","INVALID_DATE","需要真实存在的ISO日期yyyy-MM-dd");}
         boolean net=money(bill.netAmount(),"netAmount",issues),tax=money(bill.taxAmount(),"taxAmount",issues),total=money(bill.totalAmount(),"totalAmount",issues);
-        if(net&&tax&&total&&bill.netAmount().add(bill.taxAmount()).compareTo(bill.totalAmount())!=0)
-            add(issues,"totalAmount","TOTAL_MISMATCH","未税金额加税额不等于价税合计");
+        // 三个金额都通过空值、非负、精度和上限校验后再重算。
+        if (net && tax && total
+                && bill.netAmount().add(bill.taxAmount()).compareTo(bill.totalAmount()) != 0) {
+            add(issues, "totalAmount", "TOTAL_MISMATCH", "未税金额加税额不等于价税合计");
+        }
         if(net)required.put("netAmount",bill.netAmount().setScale(2).toPlainString());
         if(tax)required.put("taxAmount",bill.taxAmount().setScale(2).toPlainString());
         if(total)required.put("totalAmount",bill.totalAmount().setScale(2).toPlainString());
@@ -38,8 +41,15 @@ public final class InvoiceValidator {
                 boolean price=money(line.unitPrice(),field+".unitPrice",issues),amount=money(line.amount(),field+".amount",issues);
                 boolean qty=line.quantity()!=null&&line.quantity().signum()>0&&line.quantity().scale()<=3&&line.quantity().compareTo(new BigDecimal("100000"))<=0;
                 if(!qty)add(issues,field+".quantity","INVALID_QUANTITY","数量须大于0、不超过100000且最多3位小数");
-                if(qty&&price&&amount&&line.quantity().multiply(line.unitPrice()).setScale(2,RoundingMode.HALF_UP).compareTo(line.amount())!=0)
-                    add(issues,field,"LINE_MISMATCH","数量乘单价按分四舍五入后与明细金额不符");
+                // 每行单独重算；HALF_UP是当前样例明确采用的按分舍入规则。
+                // 数量、单价、金额各自先通过校验才参与重算：模型把其中一项返回成null时只记问题，不在这里抛异常。
+                if (qty && price && amount) {
+                    BigDecimal calculated = line.quantity().multiply(line.unitPrice())
+                            .setScale(2, RoundingMode.HALF_UP);
+                    if (calculated.compareTo(line.amount()) != 0) {
+                        add(issues, field, "LINE_MISMATCH", "数量乘单价按分四舍五入后与明细金额不符");
+                    }
+                }
                 if(amount)sum=sum.add(line.amount());else linesValid=false;
                 checkEvidence(field+".description",line.description(),line.evidence(),input,issues);
                 if(qty)checkEvidence(field+".quantity",line.quantity().stripTrailingZeros().toPlainString(),line.evidence(),input,issues);

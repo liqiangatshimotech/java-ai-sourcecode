@@ -48,6 +48,9 @@ public record DiagnosisIncident(
         }
     }
 
+    /**
+     * SLA 是否已经超时。已关闭的事件（RESOLVED / REJECTED）不再算超时。
+     */
     public boolean slaBreached(Instant now) {
         if (slaDeadline == null || status.isClosed()) {
             return false;
@@ -55,6 +58,9 @@ public record DiagnosisIncident(
         return now.isAfter(slaDeadline);
     }
 
+    /**
+     * 同一个 alertId 再次推送时调用：不新建事件，只把重复次数加一，并在时间线上记一笔。
+     */
     public DiagnosisIncident markDuplicate(Instant now) {
         List<IncidentTimelineEvent> nextTimeline = appendEvent(
             new IncidentTimelineEvent(now, "DUPLICATE_ALERT_RECEIVED", "alert-platform", "收到重复告警，返回已有排障事件。")
@@ -74,6 +80,11 @@ public record DiagnosisIncident(
         );
     }
 
+    /**
+     * 记录人工审批结果。
+     * 只有等待审批的事件才能审批：通过变成 APPROVED，拒绝变成 REJECTED，
+     * 其他状态下调用会抛 IllegalStateException，接口层返回 409。
+     */
     public DiagnosisIncident applyDecision(DecisionType decision, String operator, String comment, Instant now) {
         if (status != IncidentStatus.WAITING_APPROVAL) {
             throw new IllegalStateException("只有 WAITING_APPROVAL 状态可以审批");
@@ -82,6 +93,7 @@ public record DiagnosisIncident(
         IncidentStatus nextStatus = decision == DecisionType.APPROVE
             ? IncidentStatus.APPROVED
             : IncidentStatus.REJECTED;
+        // 时间线里带上审批结论，复盘时不用再对照状态字段。
         String message = decision == DecisionType.APPROVE
             ? "审批通过：" + comment
             : "审批拒绝：" + comment;
@@ -101,6 +113,11 @@ public record DiagnosisIncident(
         );
     }
 
+    /**
+     * 关闭事件。
+     * DIAGNOSED、WAITING_APPROVAL、APPROVED 都可以关闭；审批被拒绝的事件不能再关闭；
+     * 已经关闭的事件重复调用时原样返回，保证接口幂等。
+     */
     public DiagnosisIncident resolve(String operator, String summary, Instant now) {
         if (status == IncidentStatus.REJECTED) {
             throw new IllegalStateException("审批被拒绝的事件不能直接关闭");

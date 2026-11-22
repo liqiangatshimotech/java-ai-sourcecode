@@ -271,12 +271,16 @@ public class CustomerServiceConfiguration {
         JdbcTemplate jdbcTemplate,
         TransactionTemplate transactionTemplate
     ) {
+        // PostgreSQL 模式把会话主数据和消息写入同一个数据库事务。
+        // 页面上的领取、回复和解决动作不会出现状态已更新但事件丢失的半成功结果。
         return new PostgreSqlConversationDao(jdbcTemplate, transactionTemplate);
     }
 
     @Bean
     @ConditionalOnProperty(name = "support.storage.type", havingValue = "memory")
     public ConversationDao inMemoryConversationDao(Clock clock) {
+        // memory 模式不依赖 DataSource，适合没有 Docker 时体验完整业务流程。
+        // 数据只保存在当前 Java 进程中，重启后会恢复为种子数据。
         return new InMemoryConversationDao(clock);
     }
 

@@ -3,8 +3,8 @@ package com.example.enterpriseopsagent.config;
 /**
  * 模型连接配置。
  *
- * 这里先用普通 Java record 表达配置含义。
- * 真正接入 Spring Boot 时，可以把这些字段迁移到 @ConfigurationProperties。
+ * 这里用普通 Java record 表达配置含义，由 OpsAgentConfiguration 按 ops.ai.provider 创建。
+ * 配置项再多一些时，可以把这些字段迁移到 @ConfigurationProperties。
  */
 public record ModelSettings(
     ModelProvider provider,

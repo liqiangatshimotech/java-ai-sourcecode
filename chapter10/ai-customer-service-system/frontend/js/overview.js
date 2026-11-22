@@ -68,12 +68,14 @@ function renderMetrics(dashboard, conversations, ticketDashboard) {
   const csatCard = $("#metricCardCsat");
 
   // Waiting: up = bad (more waiting), down = good
+  // 平均等待取后端 averageWaitSeconds：待领取会话“当前时间 - lastMessageAt”的平均值。
   waitingCard.className = `metric-card card-hover-lift ${waiting > 3 ? "trend-up" : "trend-neutral"}`;
-  $("#metricWaitingHint").innerHTML = waiting === 0 ? "队列已清空" : `最长等待 ${formatDuration(dashboard?.longestWaitSeconds || 0)}${waiting > 3 ? '<span class="metric-trend up">↑ 积压</span>' : ''}`;
+  $("#metricWaitingHint").innerHTML = waiting === 0 ? "队列已清空" : `平均等待 ${formatDuration(dashboard?.averageWaitSeconds || 0)}${waiting > 3 ? '<span class="metric-trend up">↑ 积压</span>' : ''}`;
 
   // Active: neutral trend
+  // 后端没有坐席在线状态，这里不展示在线人数；今日解决取后端 resolvedTodayCount（Asia/Shanghai 自然日）。
   activeCard.className = "metric-card card-hover-lift trend-neutral";
-  $("#metricActiveHint").textContent = `${dashboard?.onlineAgentCount ?? 1} 位坐席在线`;
+  $("#metricActiveHint").textContent = `今日解决 ${dashboard?.resolvedTodayCount ?? "--"}`;
 
   // SLA: up = bad (more risk), down = good
   slaCard.className = `metric-card card-hover-lift ${slaRisk ? "trend-up" : "trend-down"}`;

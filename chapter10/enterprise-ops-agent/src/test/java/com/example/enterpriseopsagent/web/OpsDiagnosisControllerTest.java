@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,6 +89,7 @@ class OpsDiagnosisControllerTest {
             }
             """;
 
+        // 1. 推送告警：生产环境 P1，创建事件并进入等待审批。
         MvcResult createResult = mockMvc.perform(post("/api/ops/alerts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
@@ -101,11 +103,13 @@ class OpsDiagnosisControllerTest {
 
         String incidentId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.incidentId");
 
+        // 2. 按事件编号查详情。
         mockMvc.perform(get("/api/ops/incidents/{incidentId}", incidentId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.incidentId").value(incidentId))
             .andExpect(jsonPath("$.status").value("WAITING_APPROVAL"));
 
+        // 3. 按状态、服务、环境筛选待审批事件。
         mockMvc.perform(get("/api/ops/incidents")
                 .param("status", "WAITING_APPROVAL")
                 .param("serviceName", "payment-service")
@@ -113,6 +117,7 @@ class OpsDiagnosisControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].incidentId").value(incidentId));
 
+        // 4. 人工审批通过，时间线追加 APPROVAL_APPROVE。
         mockMvc.perform(post("/api/ops/incidents/{incidentId}/decision", incidentId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -126,6 +131,7 @@ class OpsDiagnosisControllerTest {
             .andExpect(jsonPath("$.status").value("APPROVED"))
             .andExpect(jsonPath("$.timeline[3].type").value("APPROVAL_APPROVE"));
 
+        // 5. 处置完成后关闭事件，记录关闭时间。
         mockMvc.perform(post("/api/ops/incidents/{incidentId}/resolve", incidentId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -137,6 +143,30 @@ class OpsDiagnosisControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("RESOLVED"))
             .andExpect(jsonPath("$.resolvedAt").exists());
+    }
+
+    @Test
+    void shouldStopAtDiagnosedForLowRiskAlert() throws Exception {
+        // 预发环境的 P3 告警：不命中审批规则，事件直接停在 DIAGNOSED，不创建审批单。
+        String requestBody = """
+            {
+              "alertId": "ALERT-LOW-HTTP-001",
+              "serviceName": "payment-service",
+              "environment": "staging",
+              "severity": "P3",
+              "title": "支付服务错误率小幅波动",
+              "description": "预发环境支付回调偶发 timeout。"
+            }
+            """;
+
+        mockMvc.perform(post("/api/ops/alerts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("DIAGNOSED"))
+            .andExpect(jsonPath("$.approvalTicketId").value(nullValue()))
+            .andExpect(jsonPath("$.report.requiresApproval").value(false))
+            .andExpect(jsonPath("$.timeline.length()").value(2));
     }
 
     @Test

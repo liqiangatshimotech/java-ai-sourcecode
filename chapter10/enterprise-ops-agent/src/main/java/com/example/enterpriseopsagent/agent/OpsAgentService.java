@@ -7,7 +7,8 @@ import com.example.enterpriseopsagent.domain.OpsAlert;
  * 运维排障 Agent 的应用服务。
  *
  * 这里先展示主流程，不把所有细节塞进一个方法里。
- * RAG 检索、工具调用、模型生成和审计日志都通过接口隔离，方便后续替换实现。
+ * RAG 检索、工具调用、模型生成和审计日志各自交给一个协作对象，
+ * 这样后续替换真实向量库、MCP 工具或模型 SDK 时，主流程不用重写。
  */
 public class OpsAgentService {
 

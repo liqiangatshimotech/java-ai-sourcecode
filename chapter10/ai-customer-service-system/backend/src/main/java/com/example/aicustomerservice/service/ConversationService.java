@@ -115,6 +115,7 @@ public class ConversationService {
     }
 
     /** 客服向客户发送可见回复；内部备注必须调用 addNote，避免误把内部信息暴露给客户。 */
+    // Controller 先用已验证的 Bearer 身份替换请求体中的 operator，再进入会话状态机。
     public ConversationDetail reply(String conversationId, String operator, String content) {
         String normalizedOperator = required(operator, "操作人不能为空");
         String normalizedContent = required(content, "回复内容不能为空");
@@ -185,37 +186,58 @@ public class ConversationService {
 
     public ConversationDashboard dashboard() {
         Instant now = clock.instant();
+
+        // 所有指标都从持久化会话读取，不依赖浏览器 localStorage。
         List<SupportConversation> all = search(null, null, null, null, null);
         List<SupportConversation> waiting = all.stream()
             .filter(item -> item.status() == ConversationStatus.WAITING)
             .toList();
+
+        // 待领取时长以最近一条客户可见消息为起点，达到 15 分钟进入 SLA 风险。
         long totalWaitingMinutes = waiting.stream()
             .mapToLong(item -> waitingMinutes(item, now))
             .sum();
-        long averageWaitingMinutes = waiting.isEmpty() ? 0 : totalWaitingMinutes / waiting.size();
+        long averageWaitingMinutes = waiting.isEmpty()
+            ? 0
+            : totalWaitingMinutes / waiting.size();
         long totalWaitingSeconds = waiting.stream()
-            .mapToLong(item -> Math.max(0, Duration.between(item.lastMessageAt(), now).toSeconds()))
+            .mapToLong(item -> Math.max(
+                0,
+                Duration.between(item.lastMessageAt(), now).toSeconds()
+            ))
             .sum();
-        long averageWaitSeconds = waiting.isEmpty() ? 0 : totalWaitingSeconds / waiting.size();
+        long averageWaitSeconds = waiting.isEmpty()
+            ? 0
+            : totalWaitingSeconds / waiting.size();
 
+        // 首响只统计 firstResponseAt 已经存在的会话，避免把尚未回复的会话当成 0 秒。
         List<SupportConversation> responded = all.stream()
             .filter(item -> item.firstResponseAt() != null)
             .toList();
         long averageFirstResponseSeconds = responded.isEmpty() ? 0 : responded.stream()
-            .mapToLong(item -> Math.max(0, Duration.between(item.createdAt(), item.firstResponseAt()).toSeconds()))
+            .mapToLong(item -> Math.max(
+                0,
+                Duration.between(item.createdAt(), item.firstResponseAt()).toSeconds()
+            ))
             .sum() / responded.size();
 
         int resolvedCount = count(all, ConversationStatus.RESOLVED);
         int resolvedTodayCount = (int) all.stream()
             .filter(item -> item.resolvedAt() != null)
-            .filter(item -> item.resolvedAt().atZone(BUSINESS_ZONE).toLocalDate()
+            .filter(item -> item.resolvedAt()
+                .atZone(BUSINESS_ZONE)
+                .toLocalDate()
                 .equals(now.atZone(BUSINESS_ZONE).toLocalDate()))
             .count();
+
+        // 当前 aiAssistRate 表示“会话中出现过 AI 消息”的覆盖率，不是建议采纳率。
         int aiAssistedCount = (int) all.stream()
             .filter(item -> conversationDao.findMessages(item.conversationId()).stream()
                 .anyMatch(message -> message.senderType() == MessageSenderType.AI))
             .count();
-        double aiAssistRate = all.isEmpty() ? 0 : Math.round(aiAssistedCount * 1000.0 / all.size()) / 10.0;
+        double aiAssistRate = all.isEmpty()
+            ? 0
+            : Math.round(aiAssistedCount * 1000.0 / all.size()) / 10.0;
 
         return new ConversationDashboard(
             all.size(),
@@ -226,13 +248,22 @@ public class ConversationService {
             count(all, ConversationStatus.WAITING_INTERNAL),
             resolvedCount,
             resolvedTodayCount,
-            (int) all.stream().filter(item -> item.status() != ConversationStatus.RESOLVED && item.assignee().isBlank()).count(),
-            (int) all.stream().filter(item -> item.status() != ConversationStatus.RESOLVED && item.priority() == ConversationPriority.URGENT).count(),
-            (int) waiting.stream().filter(item -> waitingMinutes(item, now) >= WAITING_SLA_MINUTES).count(),
+            (int) all.stream()
+                .filter(item -> item.status() != ConversationStatus.RESOLVED
+                    && item.assignee().isBlank())
+                .count(),
+            (int) all.stream()
+                .filter(item -> item.status() != ConversationStatus.RESOLVED
+                    && item.priority() == ConversationPriority.URGENT)
+                .count(),
+            (int) waiting.stream()
+                .filter(item -> waitingMinutes(item, now) >= WAITING_SLA_MINUTES)
+                .count(),
             averageWaitingMinutes,
             averageWaitSeconds,
             averageFirstResponseSeconds,
             aiAssistRate,
+            // 当前没有客户反馈表和评价接口，因此 CSAT 明确返回 null。
             null,
             countByChannel(all),
             countByStatus(all),

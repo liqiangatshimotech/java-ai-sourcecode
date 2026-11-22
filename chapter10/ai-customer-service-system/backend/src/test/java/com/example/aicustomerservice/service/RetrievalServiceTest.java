@@ -31,6 +31,7 @@ class RetrievalServiceTest {
         KnowledgeLifecycleService lifecycleService = new KnowledgeLifecycleService(dao, chunker, clock);
         RetrievalService retrievalService = new RetrievalService(dao, chunker);
 
+        // 新导入的内容先进入 DRAFT，不能因为保存成功就立即影响客服回答。
         KnowledgeDocument draft = lifecycleService.importDraft(
             "企业客户加急补发规则",
             "企业客户遇到货损时，可以申请加急补发，客服必须先核对订单和物流签收状态。",
@@ -39,18 +40,17 @@ class RetrievalServiceTest {
             "售后 SOP",
             "support-admin"
         );
-
         assertThat(retrievalService.search("企业客户加急补发", 3))
             .noneMatch(result -> result.documentId().equals(draft.documentId()));
 
+        // 提交审核并发布后，正确文档应当进入召回结果。
         lifecycleService.submitReview(draft.documentId(), "support-admin");
         lifecycleService.publish(draft.documentId(), "support-lead");
-
         assertThat(retrievalService.search("企业客户加急补发", 3))
             .anyMatch(result -> result.documentId().equals(draft.documentId()));
 
+        // 下线后必须立即退出召回，避免旧政策继续影响回答。
         lifecycleService.disable(draft.documentId(), "support-lead");
-
         assertThat(retrievalService.search("企业客户加急补发", 3))
             .noneMatch(result -> result.documentId().equals(draft.documentId()));
     }

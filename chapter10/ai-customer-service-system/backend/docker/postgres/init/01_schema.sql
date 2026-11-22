@@ -107,6 +107,8 @@ COMMENT ON COLUMN cs_conversation.last_message_at IS '最近一条客户可见�
 COMMENT ON COLUMN cs_conversation.first_response_at IS '首次人工响应时间，用于首响指标。';
 COMMENT ON COLUMN cs_conversation.resolved_at IS '会话解决时间，未解决时为空。';
 COMMENT ON COLUMN cs_conversation.resolution IS '解决摘要，用于质检和问题分类复盘。';
+COMMENT ON COLUMN cs_conversation.created_at IS '会话创建时间。';
+COMMENT ON COLUMN cs_conversation.updated_at IS '会话最近业务更新时间。';
 
 CREATE INDEX IF NOT EXISTS idx_cs_conversation_status_last_message
     ON cs_conversation (status, last_message_at DESC);
@@ -134,6 +136,7 @@ COMMENT ON COLUMN cs_conversation_message.sender_type IS '发送方：CUSTOMER�
 COMMENT ON COLUMN cs_conversation_message.sender IS '客户名称、客服名称或系统组件名称。';
 COMMENT ON COLUMN cs_conversation_message.visibility IS 'CUSTOMER 为客户可见，INTERNAL 仅客服团队可见。';
 COMMENT ON COLUMN cs_conversation_message.content IS '消息或内部事件正文。';
+COMMENT ON COLUMN cs_conversation_message.created_at IS '消息创建时间。';
 
 CREATE INDEX IF NOT EXISTS idx_cs_conversation_message_conversation_time
     ON cs_conversation_message (conversation_id, created_at, message_id);
@@ -228,6 +231,7 @@ COMMENT ON COLUMN cs_ai_run.tool_summaries IS '订单、物流、退款策略等
 COMMENT ON COLUMN cs_ai_run.guardrail_summaries IS '生产护栏命中和处理动作摘要。';
 COMMENT ON COLUMN cs_ai_run.elapsed_ms IS '从接口接收到生成决策的总耗时。';
 COMMENT ON COLUMN cs_ai_run.handoff IS '本次决策是否要求转人工。';
+COMMENT ON COLUMN cs_ai_run.created_at IS 'AI Run 创建时间。';
 
 CREATE INDEX IF NOT EXISTS idx_cs_ai_run_conversation_time
     ON cs_ai_run (conversation_id, created_at DESC);
@@ -240,14 +244,14 @@ INSERT INTO cs_ai_run (
     elapsed_ms, handoff, created_at
 ) VALUES
 (
-    'REQ-SEED-REFUND', 'CONV-20260710-001', 'DEEPSEEK', 'deepseek-chat', 'REFUND', 0.93000,
+    'REQ-SEED-REFUND', 'CONV-20260710-001', 'DEEPSEEK', 'deepseek-v4-flash', 'REFUND', 0.93000,
     '["KB-REFUND-001@v2026.06 退款与售后规则 score=0.910"]'::jsonb,
     '["order-api：订单 SO202606210004，状态 REFUNDING，金额 5600.00"]'::jsonb,
     '["HALLUCINATION_RISK：高价值退款需要人工确认仓库拦截"]'::jsonb,
     1380, TRUE, '2026-07-10 09:53:00.000000'
 ),
 (
-    'REQ-SEED-LOGISTICS', 'CONV-20260710-002', 'DEEPSEEK', 'deepseek-chat', 'LOGISTICS_QUERY', 0.89000,
+    'REQ-SEED-LOGISTICS', 'CONV-20260710-002', 'DEEPSEEK', 'deepseek-v4-flash', 'LOGISTICS_QUERY', 0.89000,
     '["KB-SHIPPING-001@v2026.06 物流查询规则 score=0.870"]'::jsonb,
     '["logistics-api：顺丰 SF202606210002，运输中"]'::jsonb,
     '["KNOWLEDGE_VERSION_DRIFT：已记录引用版本"]'::jsonb,
@@ -476,7 +480,8 @@ INSERT INTO cs_ticket (
     'CS-20260710-0001', 'C10001', 'CONV-20260710-001',
     '高价值活动物料已经进入仓库，客户要求取消并退款。',
     '需要仓库确认是否拦截发货，再由财务确认退款路径。',
-    'REFUND', 'NEW', 'URGENT', '', 'seed:warehouse-interception',
+    -- 幂等键 = 客户 ID + 种子会话里客户原话的摘要，固定演示会话再次生成 AI 建议时复用这张工单。
+    'REFUND', 'NEW', 'URGENT', '', 'C10001:cf737083cc0886cc',
     CURRENT_TIMESTAMP - INTERVAL '55 minutes',
     CURRENT_TIMESTAMP - INTERVAL '54 minutes',
     NULL, 0

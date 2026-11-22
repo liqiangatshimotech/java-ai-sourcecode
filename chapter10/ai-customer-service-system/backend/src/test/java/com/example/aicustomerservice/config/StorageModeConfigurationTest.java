@@ -1,6 +1,7 @@
 package com.example.aicustomerservice.config;
 
 import com.example.aicustomerservice.dao.ConversationDao;
+import com.example.aicustomerservice.dao.ConversationQuery;
 import com.example.aicustomerservice.dao.AiRunDao;
 import com.example.aicustomerservice.dao.InMemoryAiRunDao;
 import com.example.aicustomerservice.dao.InMemoryConversationDao;
@@ -9,6 +10,7 @@ import com.example.aicustomerservice.dao.InMemoryOrderDao;
 import com.example.aicustomerservice.dao.InMemoryTicketDao;
 import com.example.aicustomerservice.dao.KnowledgeDao;
 import com.example.aicustomerservice.dao.OrderDao;
+import com.example.aicustomerservice.dao.OrderQuery;
 import com.example.aicustomerservice.dao.TicketDao;
 import com.example.aicustomerservice.service.RetrievalService;
 import javax.sql.DataSource;
@@ -56,18 +58,27 @@ class StorageModeConfigurationTest {
 
     @Test
     void shouldUseAllInMemoryRepositoriesAndKeepKnowledgeSearchAvailable() {
+        // 会话、AI Run、订单、工单和知识必须同时切到内存实现，
+        // 不能出现一半用内存、一半仍然连接 PostgreSQL 的混合状态。
         assertThat(conversationDao).isInstanceOf(InMemoryConversationDao.class);
         assertThat(aiRunDao).isInstanceOf(InMemoryAiRunDao.class);
         assertThat(orderDao).isInstanceOf(InMemoryOrderDao.class);
         assertThat(ticketDao).isInstanceOf(InMemoryTicketDao.class);
         assertThat(knowledgeDao).isInstanceOf(InMemoryKnowledgeDao.class);
+
+        // memory 模式不应该创建 DataSource；没有 Docker 时健康检查也不应因为数据库而失败。
         assertThat(applicationContext.getBeansOfType(DataSource.class)).isEmpty();
 
-        assertThat(conversationDao.search(new com.example.aicustomerservice.dao.ConversationQuery(
-            null, null, null, null, null
+        // 切换存储后，核心页面依赖的数据与检索能力仍然要可用。
+        assertThat(conversationDao.search(new ConversationQuery(
+            null,
+            null,
+            null,
+            null,
+            null
         ))).isNotEmpty();
         assertThat(aiRunDao.search(null, null, 20)).isNotEmpty();
-        assertThat(orderDao.search(new com.example.aicustomerservice.dao.OrderQuery(null, null, null))).isNotEmpty();
+        assertThat(orderDao.search(new OrderQuery(null, null, null))).isNotEmpty();
         assertThat(knowledgeDao.findPublishedDocuments()).isNotEmpty();
         assertThat(retrievalService.search("退款", 3)).isNotEmpty();
     }

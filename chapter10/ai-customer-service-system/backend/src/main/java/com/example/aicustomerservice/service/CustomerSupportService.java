@@ -211,7 +211,12 @@ public class CustomerSupportService {
 
         if (intent.type() == IntentType.REFUND) {
             RefundAssessment assessment = toolService.assessRefund(customerId, orderNo);
-            traces.add(new ToolTrace("refund-policy-engine", assessment.reason() + assessment.nextStep()));
+            // 把退款工具的结构化结论带进工具轨迹，护栏据此决定是否转人工，不依赖摘要里的措辞。
+            traces.add(new ToolTrace(
+                "refund-policy-engine",
+                assessment.reason() + assessment.nextStep(),
+                assessment.requiresHumanReview()
+            ));
         }
 
         return traces;

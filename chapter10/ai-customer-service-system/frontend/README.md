@@ -24,7 +24,7 @@
 推荐从项目根启动 Spring Boot：
 
 ```bash
-SUPPORT_STORAGE=memory SERVER_PORT=18081 \
+SUPPORT_AUTH_ENABLED=false SERVER_ADDRESS=127.0.0.1 SUPPORT_STORAGE=memory SERVER_PORT=18081 \
 mvn -f backend/pom.xml spring-boot:run
 ```
 

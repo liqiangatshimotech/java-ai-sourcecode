@@ -64,7 +64,9 @@ public class InMemoryTicketDao implements TicketDao {
             "需要仓库确认是否拦截发货，再由财务确认退款路径。",
             "REFUND",
             TicketPriority.URGENT,
-            "seed:warehouse-interception",
+            // 幂等键与 TicketService.idempotencyKey("C10001", 种子会话里客户的原话) 的结果一致：
+            // 在固定演示会话里再次生成 AI 建议时，会复用这张工单并累加重复次数，而不是新建第二张。
+            "C10001:cf737083cc0886cc",
             now.minusSeconds(55 * 60)
         ).addNote("ai-orchestrator", "高价值订单触发人工审批护栏。", now.minusSeconds(54 * 60));
 

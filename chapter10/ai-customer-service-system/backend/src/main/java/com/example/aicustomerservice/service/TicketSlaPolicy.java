@@ -16,13 +16,18 @@ import java.time.Instant;
 public class TicketSlaPolicy {
 
     public TicketSlaSnapshot evaluate(SupportTicket ticket, Instant now) {
+        // 截止时间只由创建时间和优先级窗口计算，Controller 与前端不重复写规则。
         Instant dueAt = ticket.createdAt().plus(responseWindow(ticket.priority()));
+
+        // 工单已持续时长：未解决算到当前时间，已解决算到真实解决时间。
         Instant endAt = ticket.resolvedAt() == null ? now : ticket.resolvedAt();
         long ageMinutes = Math.max(0, Duration.between(ticket.createdAt(), endAt).toMinutes());
         long remainingMinutes = Duration.between(now, dueAt).toMinutes();
 
         if (ticket.status() == TicketStatus.RESOLVED) {
-            boolean resolvedLate = ticket.resolvedAt() != null && ticket.resolvedAt().isAfter(dueAt);
+            // 已解决不等于按时解决，RESOLVED_LATE 会保留历史违约事实。
+            boolean resolvedLate = ticket.resolvedAt() != null
+                && ticket.resolvedAt().isAfter(dueAt);
             return new TicketSlaSnapshot(
                 resolvedLate ? "RESOLVED_LATE" : "RESOLVED",
                 dueAt,
@@ -32,12 +37,16 @@ public class TicketSlaPolicy {
             );
         }
 
+        // 未解决且已经超过截止时间时，明确标记 BREACHED。
         if (now.isAfter(dueAt)) {
             return new TicketSlaSnapshot("BREACHED", dueAt, ageMinutes, remainingMinutes, true);
         }
+
+        // 剩余 30 分钟以内进入预警区，驾驶舱可以提前提示，而不是等超时后再处理。
         if (remainingMinutes <= 30) {
             return new TicketSlaSnapshot("DUE_SOON", dueAt, ageMinutes, remainingMinutes, false);
         }
+
         return new TicketSlaSnapshot("ON_TRACK", dueAt, ageMinutes, remainingMinutes, false);
     }
 

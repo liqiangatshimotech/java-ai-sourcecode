@@ -17,6 +17,7 @@ import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,6 +75,22 @@ class IncidentWorkflowServiceTest {
     }
 
     @Test
+    void shouldStopAtDiagnosedWhenApprovalIsNotRequired() {
+        IncidentWorkflowService service = newService();
+
+        // 预发环境的 P3 告警：建议里没有变更动作，也不是生产高优先级，不需要审批。
+        DiagnosisIncident incident = service.ingestAlert(alert("ALERT-LOW-001", "staging", "P3"));
+
+        assertEquals(IncidentStatus.DIAGNOSED, incident.status());
+        assertNull(incident.approvalTicketId());
+        assertFalse(incident.report().requiresApproval());
+        // 只有“收到告警”和“生成报告”两条时间线，没有 APPROVAL_REQUESTED。
+        assertEquals(2, incident.timeline().size());
+        // P3 的响应时限是 2 小时。
+        assertEquals(Instant.parse("2026-06-11T09:00:00Z"), incident.slaDeadline());
+    }
+
+    @Test
     void shouldRejectDecisionWhenIncidentDoesNotWaitApproval() {
         IncidentWorkflowService service = newService();
         DiagnosisIncident incident = service.ingestAlert(alert("ALERT-REJECT-001"));
@@ -110,11 +127,15 @@ class IncidentWorkflowServiceTest {
     }
 
     private OpsAlert alert(String alertId) {
+        return alert(alertId, "prod", "P1");
+    }
+
+    private OpsAlert alert(String alertId, String environment, String severity) {
         return new OpsAlert(
             alertId,
             "payment-service",
-            "prod",
-            "P1",
+            environment,
+            severity,
             "支付服务错误率升高",
             "支付回调接口出现大量 timeout，P95 延迟明显升高。",
             Instant.parse("2026-06-11T06:59:00Z")

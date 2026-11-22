@@ -105,7 +105,7 @@ src/main/java/com/example/texttosqlagent/
 | 2026年6月销售额最高的五个商品分类 | 6月 + 销售额 + 分类/品类 | orders ⋈ order_items ⋈ products，排除退款，按分类汇总 |
 | 累计消费金额最高的十个客户 | 客户 + 消费/累计 | customers ⋈ orders，排除退款，按客户汇总 |
 | 2026年6月各支付渠道的金额占比 | 支付/渠道 + 占比/6月 | payments ⋈ orders，窗口函数算占比 |
-| 每个商品分类的平均客单价 | 客单价 + 分类 | orders ⋈ order_items ⋈ products，AVG 订单总额 |
+| 每个商品分类的平均客单价 | 客单价 + 分类 | orders ⋈ order_items ⋈ products，排除退款，先按「分类 + 订单」去重（一张订单在同一分类里只算一次），再 AVG 订单总额 |
 
 规则模型的关键词匹配只是离线替身——真实系统里这层语义理解是模型做的。规则模型答不上会返回 `CANNOT_ANSWER`，编排层据此诚实拒答，绝不硬编 SQL（幻觉兜底）。
 

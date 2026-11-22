@@ -45,6 +45,10 @@ public class IncidentWorkflowService {
         this.clock = clock;
     }
 
+    /**
+     * 告警接入入口。
+     * 先按 alertId 查有没有已有事件：有就只记一次重复告警，没有才走诊断并创建新事件。
+     */
     public DiagnosisIncident ingestAlert(OpsAlert alert) {
         Instant now = clock.instant();
         return incidentRepository.findByAlertId(alert.alertId())
@@ -74,8 +78,10 @@ public class IncidentWorkflowService {
     }
 
     private DiagnosisIncident createNewIncident(OpsAlert alert, Instant now) {
+        // 先诊断再建事件：诊断失败（例如真实模型报错）时不会留下半成品事件。
         DiagnosisReport report = opsAgentService.diagnose(alert);
         String approvalTicketId = null;
+        // 报告里的 requiresApproval 由 ApprovalPolicy 判定：需要审批就等人工决策，否则停在 DIAGNOSED。
         IncidentStatus status = report.requiresApproval()
             ? IncidentStatus.WAITING_APPROVAL
             : IncidentStatus.DIAGNOSED;
@@ -85,6 +91,7 @@ public class IncidentWorkflowService {
         timeline.add(new IncidentTimelineEvent(now, "DIAGNOSIS_GENERATED", "ops-agent", "Agent 已生成排障报告。"));
 
         if (report.requiresApproval()) {
+            // 只创建审批单，不执行任何生产变更。
             approvalTicketId = approvalService.createRollbackApproval(
                 alert.serviceName(),
                 alert.environment(),
@@ -98,6 +105,7 @@ public class IncidentWorkflowService {
             ));
         }
 
+        // 事件主记录和时间线最后一次性落库。
         DiagnosisIncident incident = new DiagnosisIncident(
             incidentIdGenerator.nextIncidentId(),
             alert,

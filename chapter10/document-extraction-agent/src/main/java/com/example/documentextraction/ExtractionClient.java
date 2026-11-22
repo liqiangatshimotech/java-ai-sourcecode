@@ -24,9 +24,18 @@ public final class ExtractionClient {
     public ExtractionClient(ModelSettings settings,Clock clock,Duration timeout){this.settings=settings;validator=new InvoiceValidator(clock);this.timeout=timeout;}
     public ReviewResult extract(DocumentInput source) {
         String mode="live:"+settings.provider();
-        if(!settings.runModel())return ReviewResult.failed("MODEL_CALL_DISABLED","RUN_MODEL_CALL未开启，文件未发送", "offline");
-        if(source.image()&&(!settings.visionEnabled()||settings.visionModel().isBlank()||settings.provider().equals("deepseek")))
-            return ReviewResult.failed("VISION_NOT_ENABLED","图片须切换OpenAI/Ollama并配置AI_VISION_ENABLED=true和AI_VISION_MODEL；默认DeepSeek仅处理OCR文本",mode);
+        // 第一层：没有明确开启真实调用时，不发送输入文档。
+        if (!settings.runModel()) {
+            return ReviewResult.failed("MODEL_CALL_DISABLED",
+                    "RUN_MODEL_CALL未开启，文件未发送", "offline");
+        }
+        // 第二层：图片还要单独声明视觉能力并选择模型。
+        if (source.image() && (!settings.visionEnabled()
+                || settings.visionModel().isBlank()
+                || settings.provider().equals("deepseek"))) {
+            return ReviewResult.failed("VISION_NOT_ENABLED",
+                    "图片须切换OpenAI/Ollama并配置AI_VISION_ENABLED=true和AI_VISION_MODEL；默认DeepSeek仅处理OCR文本", mode);
+        }
         if(settings.apiKey().isBlank())return ReviewResult.failed("MISSING_CREDENTIAL","缺少所选服务凭证",mode);
         try {
             Object user=source.image()?List.of(Map.of("type","text","text","提取这张单页单据；bbox使用原图像素，宽="+source.width()+"，高="+source.height()),

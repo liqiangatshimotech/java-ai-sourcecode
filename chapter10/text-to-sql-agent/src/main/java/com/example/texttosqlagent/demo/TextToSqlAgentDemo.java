@@ -25,8 +25,9 @@ import java.util.List;
  *
  * 演示 4 个问题：3 个黄金问题（正常出数）+ 1 个故意答不了的问题（展示诚实兜底）。
  *
- * 运行方式：
- *   mvn compile exec:java -Dexec.mainClass=com.example.texttosqlagent.demo.TextToSqlAgentDemo
+ * 运行方式（在 java-ai-course-examples 目录执行）：
+ *   mvn -f chapter10/text-to-sql-agent/pom.xml compile exec:java \
+ *     -Dexec.mainClass=com.example.texttosqlagent.demo.TextToSqlAgentDemo
  */
 public class TextToSqlAgentDemo {
 

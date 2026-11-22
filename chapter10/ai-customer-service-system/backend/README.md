@@ -41,7 +41,9 @@ postgres：
 
 ```bash
 docker compose -f docker/local/docker-compose.yml up -d
-SUPPORT_STORAGE=postgres SERVER_PORT=18081 mvn spring-boot:run
+docker exec ai-customer-service-postgres \
+  pg_isready -U ai_customer_service -d ai_customer_service
+SUPPORT_AUTH_ENABLED=false SERVER_ADDRESS=127.0.0.1 SUPPORT_STORAGE=postgres SERVER_PORT=18081 mvn spring-boot:run
 ```
 
 `AiCustomerServiceApplication` 关闭了 Spring Boot 无条件数据源自动装配，`CustomerServiceConfiguration` 再根据 `support.storage.type` 创建对应 DAO。memory 模式不会尝试连接 PostgreSQL。
@@ -59,7 +61,7 @@ SUPPORT_STORAGE=postgres SERVER_PORT=18081 mvn spring-boot:run
 7. 高风险场景创建或复用工单。
 8. 写入会话摘要和 AI Run。
 
-`AiRunService` 以 requestId 保存 Provider、模型、意图置信度、知识版本、工具摘要、护栏、耗时和转人工结果。审计写入失败只记录告警，不会吞掉已经生成的客服回复。
+`AiRunService` 以 requestId 保存 Provider、模型、意图置信度、知识版本、工具摘要、护栏、耗时和转人工结果。进入编排前先写 `RUNNING`，写不进去请求直接失败、不进入编排；终态写入失败时请求以异常结束，error 日志带 requestId，`RUNNING` 记录保留，项目里还没有告警和悬挂记录巡检。
 
 ## 测试与打包
 
@@ -79,7 +81,7 @@ target/ai-customer-service-system-0.0.1-SNAPSHOT.jar
 ```bash
 DEEPSEEK_API_KEY=你的Key \
 AI_PROVIDER=deepseek \
-SUPPORT_STORAGE=memory \
+SUPPORT_AUTH_ENABLED=false SERVER_ADDRESS=127.0.0.1 SUPPORT_STORAGE=memory \
 SERVER_PORT=18081 \
 java -jar target/ai-customer-service-system-0.0.1-SNAPSHOT.jar
 ```

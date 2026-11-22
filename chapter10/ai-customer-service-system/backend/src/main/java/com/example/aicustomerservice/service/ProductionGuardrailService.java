@@ -66,8 +66,10 @@ public class ProductionGuardrailService {
                 "订单归属校验未通过", "停止读取订单相关数据，由人工核对身份和订单号。", true));
         }
 
+        // 退款是否转人工只看退款工具给出的结构化结论（RefundAssessment.requiresHumanReview），
+        // 不匹配摘要里的“人工确认”字样：拣货中、已发货、退款复核中的订单都会走到这里。
         if (intent.type() == IntentType.REFUND
-            && toolTraces.stream().anyMatch(trace -> trace.summary().contains("人工确认"))) {
+            && toolTraces.stream().anyMatch(ToolTrace::requiresHumanReview)) {
             guardrails.add(new ProductionGuardrail(
                 EnterpriseProblemType.HALLUCINATION_RISK,
                 "退款工具返回人工确认",

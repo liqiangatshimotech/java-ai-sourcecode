@@ -39,6 +39,55 @@ class CustomerSupportServiceTest {
     }
 
     @Test
+    void refundOnShippedOrderShouldBeForcedToHumanAndCreateTicket() {
+        CustomerSupportService supportService = newCustomerSupportService();
+
+        // SO202606210002 已发货。工具摘要里没有“人工确认”字样，转人工靠的是结构化结论。
+        SupportDecision decision = supportService.handle(
+            "S-shipped",
+            "C10002",
+            "礼盒不想要了，可以退款吗？",
+            "SO202606210002"
+        );
+
+        assertThat(decision.handoffRequired()).isTrue();
+        assertThat(decision.ticket()).isNotNull();
+        assertThat(decision.ticket().priority().name()).isEqualTo("HIGH");
+        assertThat(decision.toolTraces()).anyMatch(trace ->
+            trace.toolName().equals("refund-policy-engine") && trace.requiresHumanReview());
+        assertThat(decision.guardrails()).anyMatch(guardrail ->
+            guardrail.requiresHandoff() && guardrail.signal().equals("退款工具返回人工确认"));
+    }
+
+    @Test
+    void refundOnRefundingOrderShouldBeForcedToHumanAndReuseTicketOnRepeat() {
+        CustomerSupportService supportService = newCustomerSupportService();
+
+        // 固定演示会话 CONV-20260710-001 的订单 SO202606210004 正在退款复核中。
+        SupportDecision first = supportService.handle(
+            "CONV-20260710-001",
+            "C10001",
+            "活动物料还没收到，现在可以取消并退款吗？",
+            "SO202606210004"
+        );
+        SupportDecision second = supportService.handle(
+            "CONV-20260710-001",
+            "C10001",
+            "活动物料还没收到，现在可以取消并退款吗？",
+            "SO202606210004"
+        );
+
+        assertThat(first.handoffRequired()).isTrue();
+        assertThat(first.ticket()).isNotNull();
+        assertThat(first.ticket().priority().name()).isEqualTo("URGENT");
+        assertThat(first.guardrails()).anyMatch(guardrail ->
+            guardrail.requiresHandoff() && guardrail.signal().equals("退款工具返回人工确认"));
+        // 同一客户重复问同一个问题，复用第一次创建的工单。
+        assertThat(second.ticket().ticketId()).isEqualTo(first.ticket().ticketId());
+        assertThat(second.ticket().duplicateCount()).isEqualTo(1);
+    }
+
+    @Test
     void logisticsQueryWithOrderNoShouldUseToolWithoutTicket() {
         CustomerSupportService supportService = newCustomerSupportService();
 

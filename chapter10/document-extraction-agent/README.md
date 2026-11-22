@@ -33,7 +33,7 @@ RUN_MODEL_CALL=true AI_PROVIDER=deepseek mvn -q -f chapter10/document-extraction
 | ollama | OLLAMA_MODEL=qwen2.5:7b | OLLAMA_BASE_URL=http://localhost:11434/v1 | 默认占位ollama，本地无需云端密钥 |
 | openai / chatgpt | OPENAI_MODEL=gpt-4.1-mini | OPENAI_BASE_URL=https://api.openai.com/v1 | OPENAI_API_KEY |
 
-三家均走兼容 Chat Completions 协议；DeepSeek 分支显式关闭 thinking，使用 JSON 输出。接口兼容不保证每个模型支持相同参数，服务端拒绝时返回复核状态，不自动切换服务或重试。旧模型名 deepseek-v4-flash / deepseek-v4-pro 已被官方停用；模型目录仍会变化，真实运行前核对账户可用模型。
+三家均走兼容 Chat Completions 协议；DeepSeek 分支显式关闭 thinking，使用 JSON 输出。接口兼容不保证每个模型支持相同参数，服务端拒绝时返回复核状态，不自动切换服务或重试。DeepSeek 的模型目录会调整，旧模型名可能被映射到新模型或停用；真实运行前先核对账户当前可用的模型。
 
 ## 使用图片
 

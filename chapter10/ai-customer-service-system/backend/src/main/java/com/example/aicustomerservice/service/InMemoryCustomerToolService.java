@@ -42,17 +42,21 @@ public class InMemoryCustomerToolService implements CustomerToolService {
     public RefundAssessment assessRefund(String customerId, String orderNo) {
         return findOrder(customerId, orderNo)
             .map(order -> {
+                // 第三个参数 requiresHumanReview 才是护栏判断转人工的依据，文字只是给模型和坐席看的说明。
                 if (isNonReturnableProduct(order.productSummary())) {
-                    return new RefundAssessment(orderNo, false, "商品为日用品，根据退货规则不支持退货。", "无法办理自动退货。");
+                    // 规则明确拒绝：不能退，也不需要人工确认，AI 直接说明规则即可。
+                    return new RefundAssessment(orderNo, false, false, "商品为日用品，根据退货规则不支持退货。", "无法办理自动退货。");
                 }
                 return switch (order.status()) {
-                    case "DELIVERED" -> new RefundAssessment(orderNo, true, "订单已签收，符合 7 天无理由退款基础条件。", "可以引导用户提交退款申请。");
-                    case "PAID_PICKING" -> new RefundAssessment(orderNo, false, "订单已进入仓库拣货流程，自动退款可能导致仓配状态不一致。", "创建售后工单，由人工确认是否拦截发货。");
-                    case "SHIPPED" -> new RefundAssessment(orderNo, false, "订单已发货，需要确认物流是否可拦截。", "先创建物流拦截工单，再根据拦截结果处理退款。");
-                    default -> new RefundAssessment(orderNo, false, "当前订单状态暂不支持自动退款。", "创建工单给售后团队处理。");
+                    // 已签收：可以引导客户自助提交，不转人工。
+                    case "DELIVERED" -> new RefundAssessment(orderNo, true, false, "订单已签收，符合 7 天无理由退款基础条件。", "可以引导用户提交退款申请。");
+                    // 拣货中、已发货、退款复核中等其余状态：都涉及仓库、物流或财务确认，必须转人工。
+                    case "PAID_PICKING" -> new RefundAssessment(orderNo, false, true, "订单已进入仓库拣货流程，自动退款可能导致仓配状态不一致。", "创建售后工单，由人工确认是否拦截发货。");
+                    case "SHIPPED" -> new RefundAssessment(orderNo, false, true, "订单已发货，需要确认物流是否可拦截。", "先创建物流拦截工单，再根据拦截结果处理退款。");
+                    default -> new RefundAssessment(orderNo, false, true, "当前订单状态暂不支持自动退款。", "创建工单给售后团队处理。");
                 };
             })
-            .orElseGet(() -> new RefundAssessment(orderNo, false, "没有查到该客户名下订单。", "创建工单并核对订单号。"));
+            .orElseGet(() -> new RefundAssessment(orderNo, false, true, "没有查到该客户名下订单。", "创建工单并核对订单号。"));
     }
 
     private boolean isNonReturnableProduct(String productSummary) {

@@ -13,6 +13,7 @@ import com.example.texttosqlagent.schema.SchemaLinkingService;
 import com.example.texttosqlagent.schema.TableSchema;
 import com.example.texttosqlagent.sql.ReadOnlySqlExecutor;
 import com.example.texttosqlagent.sql.SqlSafetyGuard;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -79,6 +80,35 @@ class DataAnalysisAgentServiceTest {
         assertEquals(4, first.rowCount());
         // 每次提问都必须留审计痕迹
         assertTrue(auditTrail.size() >= questions.size());
+    }
+
+    @Test
+    void averageOrderValueCountsEachOrderOncePerCategory() {
+        DataAnalysisAgentService agent = buildAgent(new RuleBasedSqlGenerationModel());
+        // 客单价 = 平均每笔订单的订单总额。同一张订单在同一分类下有多条明细时只能算一次，
+        // 这里用种子数据手工核对过的结果做断言：订单数是去重后的订单数，平均值按订单去重后计算。
+        DataAnalysisAgentService.AnalysisOutcome outcome = agent.askWithResult("每个商品分类的平均客单价");
+        assertEquals(AnalysisStatus.ANSWERED, outcome.report().status());
+        assertEquals(List.of("商品分类", "订单数", "平均客单价"), outcome.result().columns());
+
+        // 期望值：分类 -> {去重后的订单数, 平均客单价}，按平均客单价从高到低
+        List<List<String>> expected = List.of(
+            List.of("数码", "16", "9577.69"),
+            List.of("家电", "16", "7536.13"),
+            List.of("服饰", "17", "7328.53"),
+            List.of("食品", "16", "4958.13")
+        );
+        List<List<Object>> rows = outcome.result().rows();
+        assertEquals(expected.size(), rows.size(), "四个分类各一行");
+        for (int i = 0; i < expected.size(); i++) {
+            List<Object> row = rows.get(i);
+            assertEquals(expected.get(i).get(0), row.get(0));
+            assertEquals(Long.parseLong(expected.get(i).get(1)), ((Number) row.get(1)).longValue(),
+                "订单数应该是去重后的订单数：" + row);
+            // 金额用 BigDecimal 比较数值，不比较小数位数的写法差异
+            assertEquals(0, new BigDecimal(expected.get(i).get(2)).compareTo(new BigDecimal(row.get(2).toString())),
+                "平均客单价应该按订单去重后计算：" + row);
+        }
     }
 
     @Test

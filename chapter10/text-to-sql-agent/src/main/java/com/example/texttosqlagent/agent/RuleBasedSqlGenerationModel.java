@@ -83,18 +83,26 @@ public class RuleBasedSqlGenerationModel implements SqlGenerationModel {
             LIMIT 10"""
         ),
         // 4. 分类客单价：客单价 + 分类
+        // 客单价的口径是「平均每笔订单的订单总额」。一张订单在同一个分类下可能有多条明细，
+        // 如果关联 order_items 之后直接 AVG(o.total_amount)，这张订单会被重复计入平均值。
+        // 所以先在子查询里按「分类 + 订单」去重，保证每张订单在每个分类里只算一次，再求平均。
         new GoldenQuery(
             "各分类平均客单价",
             List.of(List.of("客单价"), List.of("分类", "品类")),
             """
-            SELECT p.category AS "商品分类",
-                   COUNT(DISTINCT o.id) AS "订单数",
-                   ROUND(AVG(o.total_amount), 2) AS "平均客单价"
-            FROM orders o
-            JOIN order_items oi ON oi.order_id = o.id
-            JOIN products p ON p.id = oi.product_id
-            WHERE o.status <> 'REFUNDED'
-            GROUP BY p.category
+            SELECT t.category AS "商品分类",
+                   COUNT(t.order_id) AS "订单数",
+                   ROUND(AVG(t.total_amount), 2) AS "平均客单价"
+            FROM (
+                SELECT DISTINCT p.category AS category,
+                       o.id AS order_id,
+                       o.total_amount AS total_amount
+                FROM orders o
+                JOIN order_items oi ON oi.order_id = o.id
+                JOIN products p ON p.id = oi.product_id
+                WHERE o.status <> 'REFUNDED'
+            ) t
+            GROUP BY t.category
             ORDER BY "平均客单价" DESC
             LIMIT 10"""
         )

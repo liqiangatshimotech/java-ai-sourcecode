@@ -89,15 +89,17 @@ docker exec ai-customer-service-postgres \
   pg_isready -U ai_customer_service -d ai_customer_service
 ```
 
-再启动应用：
+`pg_isready` 输出 `accepting connections` 后再启动应用：
 
 ```bash
 DEEPSEEK_API_KEY=你的Key \
 AI_PROVIDER=deepseek \
-SUPPORT_STORAGE=postgres \
+SUPPORT_AUTH_ENABLED=false SERVER_ADDRESS=127.0.0.1 SUPPORT_STORAGE=postgres \
 SERVER_PORT=18081 \
 mvn -f backend/pom.xml spring-boot:run
 ```
+
+这里和 memory 模式一样是本机无登录演示。去掉 `SUPPORT_AUTH_ENABLED=false` 就回到默认鉴权，此时必须先配置 `SUPPORT_AUTH_IDENTITIES`，否则所有 `/api` 请求都会返回 401。
 
 PostgreSQL 模式会持久化：
 
@@ -109,6 +111,8 @@ PostgreSQL 模式会持久化：
 - `cs_ai_run`：模型、意图、知识、工具、护栏和耗时审计
 
 ## 模型切换
+
+下面三条命令只展示模型相关的环境变量，存储模式、端口和访问身份沿用上面两节的写法。
 
 DeepSeek 是默认 Provider：
 
@@ -176,24 +180,42 @@ GET  /api/support/knowledge/search
 mvn -f backend/pom.xml test
 ```
 
-当前测试覆盖 35 项，包括：
+当前共 52 项测试，包括：
 
 - `claim → reply → wait-customer → resolve` 完整会话链路
 - 重复领取幂等、转接和越权状态检查
 - 会话 Dashboard 与 SLA 统计
-- 工单幂等、分配、备注和关闭
-- 订单查询与状态更新
+- 工单幂等、重新打开，以及解决后备注 / 分配 / 重复关闭都被拒绝
+- 订单查询，以及状态迁移表之外的变更被拒绝
+- 拣货中、已发货、退款复核中的退款请求强制转人工并创建或复用工单
 - RAG、知识生命周期和生产护栏
 - DeepSeek / Ollama / ChatGPT 配置
 - Controller 参数校验与响应字段
 
-健康检查：
+健康检查（后两条在无登录演示下可以直接访问；默认鉴权时要加 `-H "Authorization: Bearer <客服访问凭据>"`）：
 
 ```bash
 curl -s http://localhost:18081/actuator/health
 curl -s http://localhost:18081/api/support/conversations/dashboard
 curl -s http://localhost:18081/api/support/ai-runs
 ```
+
+## Docker 运行 JAR
+
+`backend/Dockerfile` 只负责运行已经构建好的 JAR，`docker-compose.yml` 只启动数据库。在项目根目录执行：
+
+```bash
+mvn -f backend/pom.xml clean package
+docker build -t ai-customer-service-system:local backend
+docker run --rm -p 127.0.0.1:18081:8080 \
+  -e SUPPORT_AUTH_ENABLED=false \
+  -e SUPPORT_STORAGE=memory \
+  -e AI_PROVIDER=deepseek \
+  -e DEEPSEEK_API_KEY=你的Key \
+  ai-customer-service-system:local
+```
+
+每个环境变量单独写一个 `-e`。容器里不要设置 `SERVER_ADDRESS=127.0.0.1`，否则应用只监听容器自己的回环地址，宿主机访问不到；只允许本机访问靠的是 `-p 127.0.0.1:18081:8080`。
 
 更细的后端分层与接口说明见 `backend/README.md`，页面交互说明见 `frontend/README.md`。
 
@@ -215,6 +237,12 @@ curl -s http://localhost:18081/api/support/ai-runs
 默认启用服务端 Bearer 凭据验证。通过 `SUPPORT_AUTH_IDENTITIES` 环境变量提供 JSON 数组，每个元素含 `token`（至少 24 位随机值）、`user`、`tenant`、`role`。角色取 `viewer`、`agent` 或 `admin`；`SUPPORT_TENANT` 指定此部署的租户，默认 `course`。令牌属于其他租户时返回 403；它是“一租户一实例”的隔离方式，并没有实现多租户共库。
 
 `viewer` 只读；`agent` 可生成建议和处理会话；知识写入、订单状态变更、会话/工单分配需要 `admin`。操作人取验证后的身份，JSON 的 operator 字段仅保留接口兼容，不作为身份依据。浏览器设置页输入客服访问凭据，保存在 sessionStorage。模型 API Key 只放后端环境变量。
+
+页面里的当前坐席固定是 `support-linxiao`（`frontend/js/reception.js` 的 `OPERATOR`），演示凭据的 `user` 要填这个值，否则领取会话后回复框和操作按钮不会出现；`tenant` 要等于 `SUPPORT_TENANT`。例如：
+
+```bash
+SUPPORT_AUTH_IDENTITIES='[{"token":"<至少24位随机字符串>","user":"support-linxiao","tenant":"course","role":"admin"}]'
+```
 
 本机无登录演示可以显式设置 `SUPPORT_AUTH_ENABLED=false`；此模式不具备鉴权，不能用于公开部署。默认模式没有配置凭据时会拒绝所有 API 请求。
 
